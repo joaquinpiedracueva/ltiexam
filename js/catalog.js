@@ -6,7 +6,8 @@
 var MATERIAS = {
   1: [],
   2: [
-    { label: "Programación SQL", file: "programacion-sql.md" }
+    { label: "Algoritmos y Patrones de Diseño", file: "AYPD.md" },
+    { label: "Programación SQL", file: "SQL.md" }
   ],
   3: [],
   4: [],

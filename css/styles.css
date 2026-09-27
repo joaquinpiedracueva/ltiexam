@@ -55,7 +55,7 @@ body{
   display:flex; flex-direction:column; gap:5px; /* separación mínima entre bloques: se ve el mosaico */
 }
 /* bloques: header, barra del examen, contenido y pie */
-.site-header, header.bar, main, .site-footer{background:var(--surface); border:1px solid var(--border)}
+.site-header, header.bar, .qnav, main, .site-footer{background:var(--surface); border:1px solid var(--border)}
 .site-header{border-top:none}
 .site-footer{border-bottom:none}
 .content{flex:1; display:flex; flex-direction:column; gap:5px}
@@ -63,7 +63,7 @@ main{padding:2.25rem 2.5rem 3rem; flex:1}
 @media (max-width:560px){
   .page, .content{gap:4px}
   .page{width:100%}
-  .site-header, header.bar, main, .site-footer{border-left:none; border-right:none}
+  .site-header, header.bar, .qnav, main, .site-footer{border-left:none; border-right:none}
   main{padding:1.5rem 1rem 2.25rem}
 }
 button{font:inherit; color:inherit; cursor:pointer}
@@ -337,3 +337,42 @@ details.miss[open] > summary{border-bottom:1px solid var(--border)}
 .tag-ok{color:var(--ok); background:var(--ok-soft)}
 .tag-bad{color:var(--bad); background:var(--bad-soft)}
 @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important} }
+
+/* ---------- CodeRunner ---------- */
+.cr-editor{margin-top:1.3rem; border:1px solid var(--border)}
+.cr-editor .ace_editor{font-size:14px}
+.cr-plain{
+  display:block; width:100%; min-height:20rem; padding:.7rem .85rem; border:0; resize:vertical;
+  background:var(--surface); color:var(--text); font:14px/1.5 Menlo, Consolas, monospace; tab-size:4;
+}
+.cr-table{width:100%}
+.cr-table td{vertical-align:top}
+.cr-table pre{margin:0; padding:0; background:none; border:0; font-family:var(--mono); font-size:12.5px; line-height:1.5}
+.cr-table tr.ok td{background:var(--ok-soft)}
+.cr-table tr.bad td{background:var(--bad-soft)}
+.cr-table .cr-mark{width:1.8rem; text-align:center; font-weight:600}
+.cr-table tr.ok .cr-mark{color:var(--ok)}
+.cr-table tr.bad .cr-mark{color:var(--bad)}
+.cr-examples{margin-top:1.1rem}
+.cr-result{margin-top:1.2rem}
+.cr-result .cr-table{margin-top:.7rem}
+.cr-err{color:var(--bad); white-space:pre-wrap}
+.cr-status{margin-top:1.2rem; color:var(--text-dim); font-size:14px}
+.cr-penalty{margin-top:.6rem; color:var(--text-dim); font-size:13.5px}
+.ans-line > span:last-child{flex:1; min-width:0}
+.ans-line pre{margin:0}
+
+/* ---------- navegación entre preguntas ---------- */
+.qnav{display:flex; align-items:flex-start; gap:1rem; padding:.8rem 2.5rem}
+.qnav[hidden]{display:none}
+.qnav-grid{flex:1; display:flex; flex-wrap:wrap; gap:4px; padding:3px; margin:-3px; max-height:calc(3 * 2rem + 2 * 4px + 6px); overflow-y:auto} /* padding: que no se corte el borde de la actual */
+.qn-sq{
+  width:2rem; height:2rem; flex:none; padding:0; font-size:13px; line-height:1;
+  background:var(--surface-2); color:var(--text-dim); border:1px solid var(--border);
+}
+.qn-sq:hover{border-color:var(--border-strong); color:var(--text)}
+.qn-sq.ok{background:var(--ok); border-color:var(--ok); color:var(--surface)}
+.qn-sq.bad{background:var(--bad); border-color:var(--bad); color:var(--surface)}
+.qn-sq.cur{outline:2px solid var(--accent); outline-offset:1px}
+.qnav .btn{flex:none; height:2rem; padding:0 1rem; font-size:13px}
+@media (max-width:560px){ .qnav{padding:.7rem 1rem} }

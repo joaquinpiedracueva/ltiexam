@@ -38,7 +38,12 @@ var RE_TOP = /^- (.*)$/;
 var RE_NESTED = /^ +[-*] (.*)$/;
 var RE_LETTER = /^([a-z])[.)]\s*(.*)$/i;
 
+// CodeRunner: secciones «### Código base», «### Prueba» (código + salida esperada) y «### Solución»
+var RE_CODE_SECTION = /^###\s+(c[oó]digo base|prueba|soluci[oó]n)\s*$/i;
+var RE_CODE_TYPE = /^\s*\*\*Tipo:?\*\*\s*CodeRunner\b(.*)$/i;
+
 function parseQuestion(label, raw, idx){
+  if (raw.some(function(l){ return RE_CODE_SECTION.test(l) || RE_CODE_TYPE.test(l); })) return parseCodeQuestion(label, raw, idx);
   // 1. clasificar cada linea (respetando bloques de codigo)
   var marks = [], fence = false;
   raw.forEach(function(line, i){
@@ -126,6 +131,43 @@ function parseQuestion(label, raw, idx){
   return {
     id: idx, label: label, num: num ? Number(num) : idx + 1,
     statement: statement, options: options, type: type, reveal: reveal, note: note
+  };
+}
+function parseCodeQuestion(label, raw, idx){
+  var sections = [{ name: "", lines: [] }], fence = false, lang = "java";
+  raw.forEach(function(line){
+    if (/^\s*```/.test(line)) fence = !fence;
+    var m = !fence && line.match(RE_CODE_SECTION);
+    if (m) { sections.push({ name: m[1].toLowerCase().replace("ó", "o"), lines: [] }); return; }
+    var t = !fence && line.match(RE_CODE_TYPE);
+    if (t) { if (/python/i.test(t[1])) lang = "python"; return; } // hoy solo Java; queda anotado el lenguaje
+    sections[sections.length - 1].lines.push(line);
+  });
+  // bloques ``` de una sección, en orden
+  function blocks(lines){
+    var out = [], buf = null;
+    lines.forEach(function(l){
+      if (/^\s*```/.test(l)){ if (buf){ out.push(buf.join("\n")); buf = null; } else buf = []; }
+      else if (buf) buf.push(l);
+    });
+    return out;
+  }
+  function trim(a){
+    var c = a.slice();
+    while (c.length && c[0].trim() === "") c.shift();
+    while (c.length && c[c.length - 1].trim() === "") c.pop();
+    return c;
+  }
+  var byName = function(n){ return sections.filter(function(x){ return x.name === n; }); };
+  var base = byName("codigo base")[0], sol = byName("solucion")[0];
+  var num = (label.match(/(\d+)/) || [])[1];
+  return {
+    id: idx, label: label, num: num ? Number(num) : idx + 1, type: "code", lang: lang,
+    statement: trim(sections[0].lines),
+    template: base ? (blocks(base.lines)[0] || "") : "",
+    tests: byName("prueba").map(function(x){ var b = blocks(x.lines); return { code: b[0] || "", expected: b[1] || "" }; }),
+    solution: sol ? (blocks(sol.lines)[0] || "") : "",
+    options: [], reveal: [], note: []
   };
 }
 /* ============================= PARSER END ============================= */

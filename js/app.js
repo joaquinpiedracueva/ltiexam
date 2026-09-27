@@ -4,6 +4,7 @@
 var S = { db: null, count: null, minutes: null, sem: null, mat: null, loading: false, finished: false, timedOut: false, deadline: 0, order: [], idx: 0, answers: [], pick: null, answered: false, matchPick: {} };
 var app = document.getElementById("app");
 var bar = document.getElementById("bar");
+var qnav = document.getElementById("qnav");
 var PASS = 0.6;
 
 function shuffle(a){
@@ -147,7 +148,10 @@ document.addEventListener("mousedown", function(e){ if (!e.target.closest(".dd")
 // Un solo formulario: semestre → materia (carga el banco) → cantidad → Empezar.
 function renderSetup(msg){
   stopTimer();
+  dropEditor();
+  S.attempt = (S.attempt || 0) + 1; // una comprobación que vuelva tarde ya no cuenta
   bar.hidden = true;
+  qnav.hidden = true;
   var n = S.db ? S.db.questions.length : 0;
   if (n) S.count = clampCount(S.count, n);
   var hasSem = S.sem !== null;
@@ -218,10 +222,13 @@ function beginAttempt(pool){
   var n = pool ? all.length : clampCount(S.count, all.length);
   S.order = all.slice(0, n).map(shuffleOptions);
   S.review = !!pool;
-  S.idx = 0; S.answers = []; S.pick = null; S.answered = false; S.matchPick = {};
-  S.finished = false; S.timedOut = false;
+  // answers[i] y drafts[i] van por posición en el intento, así se puede ir y volver entre preguntas
+  S.idx = 0; S.answers = []; S.drafts = []; S.pick = null; S.answered = false; S.matchPick = {};
+  S.finished = false; S.finishing = false; S.timedOut = false; S.attempt = (S.attempt || 0) + 1;
   document.getElementById("barTitle").textContent = S.db.title + (S.review ? " · falladas" : "");
   bar.hidden = false;
+  qnav.hidden = false;
+  if (S.order.some(function(q){ return q.type === "code"; })) CR.init().catch(function(){}); // el error se muestra al comprobar
   startTimer();
   renderQuestion();
 }
@@ -233,6 +240,7 @@ var REFS_OTHERS = /\(\s*[a-e]\s*(?:y|,|e|o)\s*[a-e]\s*\)|\b(?:las|todas las|ning
 // Copia de la pregunta con las alternativas en orden aleatorio y las letras reasignadas por
 // posición (a, b, c…), así lo que se ve, «tu respuesta» y «correcta» usan la misma letra.
 function shuffleOptions(q){
+  if (q.type === "code") return q;
   if (q.type === "match"){
     return Object.assign({}, q, { options: q.options.map(function(o){
       return Object.assign({}, o, { children: shuffle(o.children) });
@@ -270,39 +278,62 @@ function tick(){
   var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), ss = sec % 60;
   timeOut.textContent = (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(ss).padStart(2, "0");
   timeWrap.classList.toggle("low", sec <= 60);
-  if (left <= 0){ S.timedOut = true; renderResult(); }
+  if (left <= 0){ S.timedOut = true; finish(); }
 }
 
+// Cada respuesta vale de 0 a 1: las de opción múltiple 1 o 0, un CodeRunner 1 menos 0,1 por comprobación fallida.
+// «Aciertos» cuenta las que sumaron algo; el porcentaje y el aprobado usan los puntos.
 function stats(){
   var total = S.order.length;
-  var ok = S.answers.filter(function(a){ return a.correct; }).length;
-  return { total: total, ok: ok, bad: S.answers.length - ok, answered: S.answers.length, left: total - S.answers.length };
+  var done = S.answers.filter(Boolean);
+  var ok = done.filter(function(a){ return a.correct; }).length;
+  var pts = done.reduce(function(t, a){ return t + a.score; }, 0);
+  return { total: total, ok: ok, bad: done.length - ok, answered: done.length, left: total - done.length, pts: pts };
 }
+
+// 2,5 / 3 (con coma, un decimal si hace falta)
+function fmtPts(x){ return String(Math.round(x * 10) / 10).replace(".", ","); }
 
 function updateBar(){
   var s = stats();
   document.getElementById("barPos").textContent = "Pregunta " + Math.min(S.idx + 1, s.total) + " de " + s.total;
   document.getElementById("statOk").textContent = s.ok;
   document.getElementById("statBad").textContent = s.bad;
-  document.getElementById("statPct").textContent = s.answered ? Math.round(s.ok / s.answered * 100) + "%" : "0%";
-  document.getElementById("mOk").style.width = (s.ok / s.total * 100) + "%";
-  document.getElementById("mBad").style.width = (s.bad / s.total * 100) + "%";
+  document.getElementById("statPct").textContent = s.answered ? Math.round(s.pts / s.answered * 100) + "%" : "0%";
+  document.getElementById("mOk").style.width = (s.pts / s.total * 100) + "%";
+  document.getElementById("mBad").style.width = ((s.answered - s.pts) / s.total * 100) + "%";
   var chip = document.getElementById("statChip");
   chip.className = "verdict-chip";
   if (!s.answered){ chip.classList.add("chip-live"); chip.textContent = "Sin responder"; }
-  else if (s.ok / s.total >= PASS){ chip.classList.add("chip-ok"); chip.textContent = "Aprobado asegurado"; }
-  else if ((s.ok + s.left) / s.total < PASS){ chip.classList.add("chip-bad"); chip.textContent = "Ya no alcanza"; }
+  else if (s.pts / s.total >= PASS - 1e-9){ chip.classList.add("chip-ok"); chip.textContent = "Aprobado asegurado"; }
+  else if ((s.pts + s.left) / s.total < PASS - 1e-9){ chip.classList.add("chip-bad"); chip.textContent = "Ya no alcanza"; }
   else {
-    var need = Math.ceil(PASS * s.total) - s.ok;
+    var need = PASS * s.total - s.pts;
     chip.classList.add("chip-live");
-    chip.textContent = need === 1 ? "Falta 1 acierto" : "Faltan " + need + " aciertos";
+    if (Math.abs(s.pts - Math.round(s.pts)) > 1e-9){ // hay un CodeRunner con penalización
+      chip.textContent = "Faltan " + fmtPts(Math.ceil(need * 10 - 1e-9) / 10) + " puntos";
+    } else {
+      need = Math.ceil(need - 1e-9);
+      chip.textContent = need === 1 ? "Falta 1 acierto" : "Faltan " + need + " aciertos";
+    }
   }
 }
 
 function renderQuestion(){
   var q = S.order[S.idx];
+  dropEditor();
+  renderNav();
+  if (q.type === "code") return renderCode(q);
   S.pick = null; S.answered = false; S.matchPick = {};
   updateBar();
+  var done = S.answers[S.idx];
+  if (done){ // ya respondida: se muestra como quedó, sin poder cambiarla
+    S.answered = true;
+    app.innerHTML = done.html;
+    window.scrollTo(0, 0);
+    renderActions();
+    return;
+  }
 
   var optsHtml;
   if (q.type === "match"){
@@ -375,8 +406,7 @@ function renderActions(){
   var box = document.getElementById("actions");
   if (!box) return;
   if (S.answered){
-    var last = S.idx === S.order.length - 1;
-    box.innerHTML = '<button class="btn" id="next">' + (last ? "Ver resultado" : "Siguiente") + " &rarr;</button>";
+    box.innerHTML = '<button class="btn" id="next">' + (isLast() ? "Ver resultado" : "Siguiente") + " &rarr;</button>";
     var nb = document.getElementById("next");
     nb.onclick = next;
     nb.focus({ preventScroll: true });
@@ -468,7 +498,7 @@ function lockOptions(q, chosen, hideMarks){
 }
 
 function finishAnswer(q, correct, picked){
-  S.answers.push({ q: q, correct: correct, picked: picked });
+  var a = S.answers[S.idx] = { q: q, correct: correct, picked: picked, score: correct ? 1 : 0 };
   S.answered = true;
   var fb = document.getElementById("fb");
   if (q.type === "selfgrade"){
@@ -484,30 +514,249 @@ function finishAnswer(q, correct, picked){
         (q.note.length ? mdBlock(q.note) : "") +
       "</div>";
   }
+  // copia de cómo quedó la pregunta, para mostrarla igual si se vuelve a ella
+  var snap = app.firstElementChild.cloneNode(true);
+  snap.querySelector("#actions").innerHTML = "";
+  a.html = snap.outerHTML;
   updateBar();
+  renderNav();
   renderActions();
 }
 
+/* ---------------------------- navegación ----------------------------- */
+// sin responder, sin contar la actual
+function othersLeft(){
+  return S.order.filter(function(q, i){ return i !== S.idx && !S.answers[i]; }).length;
+}
+
+// última pregunta y no queda otra por responder: el botón pasa a «Ver resultado»
+function isLast(){ return S.idx === S.order.length - 1 && !othersLeft(); }
+
+// sigue en orden; desde la última vuelve a la primera sin responder
 function next(){
-  if (S.idx === S.order.length - 1){ renderResult(); return; }
-  S.idx++;
+  if (S.idx < S.order.length - 1) return goTo(S.idx + 1);
+  for (var i = 0; i < S.order.length; i++) if (i !== S.idx && !S.answers[i]) return goTo(i);
+  finishAsk();
+}
+
+function goTo(i){
+  if (S.finishing || S.finished) return;
+  S.idx = i;
   renderQuestion();
+}
+
+// cuadros de navegación: verde acertada, rojo fallada, borde celeste la actual
+function renderNav(){
+  document.getElementById("qnavGrid").innerHTML = S.order.map(function(q, i){
+    var a = S.answers[i], cur = i === S.idx;
+    return '<button type="button" class="qn-sq' + (a ? (a.correct ? " ok" : " bad") : "") + (cur ? " cur" : "") + '" data-i="' + i + '"' +
+      ' aria-label="Pregunta ' + (i + 1) + (a ? (a.correct ? ", acertada" : ", fallada") : "") + '"' + (cur ? ' aria-current="step"' : "") + ">" + (i + 1) + "</button>";
+  }).join("");
+}
+document.getElementById("qnavGrid").onclick = function(e){
+  var b = e.target.closest(".qn-sq");
+  if (b) goTo(Number(b.dataset.i));
+};
+document.getElementById("finishBtn").onclick = function(){ finishAsk(); };
+
+function finishAsk(){
+  saveDraft();
+  // el código escrito cuenta como respuesta: se califica al terminar
+  var left = S.order.filter(function(q, i){
+    var d = S.drafts[i];
+    return !S.answers[i] && !(d && (d.lastChecked !== null || d.code !== q.template));
+  }).length;
+  if (left && !confirm(left === 1 ? "Queda 1 pregunta sin responder. ¿Terminar el intento?" : "Quedan " + left + " preguntas sin responder. ¿Terminar el intento?")) return;
+  finish();
+}
+
+// Termina el intento. Como Moodle al enviar: el código que quedó escrito sin comprobar se califica ahora.
+function finish(){
+  if (S.finishing || S.finished) return;
+  S.finishing = true;
+  stopTimer();
+  saveDraft();
+  var attempt = S.attempt;
+  var todo = S.order.map(function(q, i){ return i; }).filter(function(i){
+    return S.order[i].type === "code" && !S.answers[i] && S.drafts[i];
+  });
+  if (!todo.length) return renderResult();
+  dropEditor();
+  app.innerHTML = '<section><p class="cr-status">Calificando el código…</p></section>';
+  todo.reduce(function(chain, i){
+    var st = S.drafts[i];
+    return chain.then(function(){ return st.pending; }).then(function(){
+      if (attempt !== S.attempt || S.answers[i]) return;
+      if (st.code === st.lastChecked) return recordCode(i, false); // ya se comprobó así y falló
+      if (st.code === S.order[i].template) return; // sin tocar: queda sin responder
+      return runCheck(i, true).then(function(pass){ if (!pass) recordCode(i, false); });
+    });
+  }, Promise.resolve()).then(function(){ if (attempt === S.attempt) renderResult(); });
+}
+
+/* ----------------------------- CodeRunner ----------------------------- */
+// Como en Moodle: se escribe el código, «Comprobar» lo compila y corre las pruebas, y cada
+// comprobación que falla (no compila o alguna salida no coincide) resta 10% de esta pregunta.
+// El borrador queda guardado al cambiar de pregunta; al terminar el intento, lo escrito y no
+// comprobado se califica con la penalización acumulada.
+var PENALTY = 0.1;
+var codeEditor = null;
+
+function aceTheme(){ return currentTheme() === "dark" ? "ace/theme/tomorrow_night" : "ace/theme/tomorrow"; }
+
+// Ace (el editor del plugin CodeRunner de Moodle); sin conexión al CDN queda un textarea
+function makeEditor(el, value){
+  if (window.ace){
+    var ed = ace.edit(el, {
+      mode: "ace/mode/java", theme: aceTheme(), fontSize: 14, tabSize: 4, useSoftTabs: true,
+      showPrintMargin: false, minLines: 14, maxLines: 40, useWorker: false
+    });
+    ed.session.setValue(value);
+    return { ace: ed, get: function(){ return ed.getValue(); }, lock: function(){ ed.setReadOnly(true); }, focus: function(){ ed.focus(); } };
+  }
+  var ta = document.createElement("textarea");
+  ta.className = "cr-plain"; ta.spellcheck = false; ta.value = value;
+  el.appendChild(ta);
+  return { get: function(){ return ta.value; }, lock: function(){ ta.readOnly = true; }, focus: function(){ ta.focus(); } };
+}
+
+function saveDraft(){ if (codeEditor && S.code) S.code.code = codeEditor.get(); }
+
+function dropEditor(){
+  saveDraft();
+  if (codeEditor && codeEditor.ace) codeEditor.ace.destroy();
+  codeEditor = null;
+  S.code = null; // una comprobación que vuelva después ya no escribe en esta pantalla
+}
+
+function renderCode(q){
+  var idx = S.idx;
+  var st = S.drafts[idx] || (S.drafts[idx] = { code: q.template, fails: 0, checking: false, lastChecked: null, passed: false, fbHtml: "", pending: null });
+  S.code = st;
+  S.pick = null; S.answered = st.passed; S.matchPick = {};
+  updateBar();
+  app.innerHTML =
+    '<section>' +
+      '<div class="statement">' + mdBlock(stripEnunciado(q.statement)) + "</div>" +
+      (q.tests.length ?
+        '<div class="scroll-x"><table class="cr-table cr-examples"><thead><tr><th>Prueba</th><th>Resultado</th></tr></thead><tbody>' +
+          q.tests.map(function(t){
+            return "<tr><td><pre>" + esc(t.code) + "</pre></td><td><pre>" + esc(t.expected) + "</pre></td></tr>";
+          }).join("") +
+        "</tbody></table></div>" : "") +
+      '<div class="cr-editor" id="editor"></div>' +
+      '<div id="fb">' + (st.checking ? checkingHtml() : st.fbHtml) + "</div>" +
+      '<div class="row-end" id="actions"></div>' +
+    "</section>";
+  window.scrollTo(0, 0);
+  codeEditor = makeEditor(document.getElementById("editor"), st.code);
+  if (S.answers[idx]) codeEditor.lock();
+  renderCodeActions();
+}
+
+function checkingHtml(){
+  return '<p class="cr-status">' + (CR.warm() ? "Compilando…" : "Preparando Java… la primera vez tarda unos segundos.") + "</p>";
+}
+
+function renderCodeActions(){
+  var st = S.code, box = document.getElementById("actions");
+  if (!box || !st) return;
+  if (S.answers[S.idx]) return renderActions(); // «Siguiente» como en las demás
+  box.innerHTML =
+    '<button class="btn btn-ghost" id="skip">' + (isLast() ? "Terminar" : "Siguiente") + " &rarr;</button>" +
+    '<button class="btn" id="crCheck"' + (st.checking ? " disabled" : "") + ">" + (st.checking ? "Comprobando…" : "Comprobar") + "</button>";
+  document.getElementById("crCheck").onclick = checkCode;
+  document.getElementById("skip").onclick = next;
+}
+
+// botón «Comprobar»: se puede cambiar de pregunta mientras compila, el resultado queda en el borrador
+function checkCode(){
+  var st = S.code;
+  saveDraft();
+  st.pending = runCheck(S.idx, false).then(function(pass){
+    if (S.code === st && !pass){ document.getElementById("fb").innerHTML = st.fbHtml; renderCodeActions(); }
+    return pass;
+  });
+  document.getElementById("fb").innerHTML = checkingHtml();
+  renderCodeActions();
+}
+
+// Compila y prueba el borrador de la pregunta i. final = calificación al terminar: no suma penalización.
+function runCheck(i, final){
+  var q = S.order[i], st = S.drafts[i], code = st.code, attempt = S.attempt;
+  st.checking = true;
+  return CR.check(code, q.tests).then(function(res){
+    if (attempt !== S.attempt) return false;
+    st.checking = false; st.lastChecked = code;
+    var pass = res.compiled && res.results.every(function(r){ return r.pass; });
+    if (!pass && !final) st.fails++;
+    st.fbHtml = codeResultHtml(q, res, pass, st.fails);
+    if (pass) recordCode(i, true);
+    return pass;
+  }, function(err){
+    if (attempt !== S.attempt) return false;
+    st.checking = false;
+    st.fbHtml = '<p class="err">' + esc(err.message) + "</p>";
+    return false;
+  });
+}
+
+function codeScore(fails){ return Math.max(0, 1 - PENALTY * fails); }
+
+function recordCode(i, pass){
+  var st = S.drafts[i];
+  st.passed = pass;
+  S.answers[i] = { q: S.order[i], correct: pass, picked: st.code, score: pass ? codeScore(st.fails) : 0 };
+  if (S.finishing || S.finished) return;
+  renderNav();
+  updateBar();
+  if (S.code === st){ // está en pantalla
+    codeEditor.lock();
+    document.getElementById("fb").innerHTML = st.fbHtml;
+    S.answered = true;
+    renderActions();
+  }
+}
+
+function codeResultHtml(q, res, pass, fails){
+  var penalty = fails ? '<p class="cr-penalty">' + (pass
+    ? "Puntaje de esta pregunta: " + Math.round(codeScore(fails) * 100) + "% (" + fails + (fails === 1 ? " comprobación fallida" : " comprobaciones fallidas") + ")"
+    : "Penalización acumulada: −" + Math.round(Math.min(1, PENALTY * fails) * 100) + "%") + "</p>" : "";
+  if (!res.compiled){
+    return '<div class="cr-result">' +
+      '<div class="verdict bad"><span aria-hidden="true">✕</span> Error de compilación</div>' +
+      '<pre class="cr-err">' + esc(res.errors.map(function(e){
+        return e.where + (e.line > 0 ? ", línea " + e.line : "") + ": " + e.message;
+      }).join("\n\n")) + "</pre>" + penalty + "</div>";
+  }
+  var failed = res.results.filter(function(r){ return !r.pass; }).length;
+  return '<div class="cr-result">' +
+    '<div class="verdict ' + (pass ? "ok" : "bad") + '"><span aria-hidden="true">' + (pass ? "✓" : "✕") + "</span> " +
+      (pass ? "Pasó todas las pruebas" : "Falló " + failed + " de " + res.results.length + (res.results.length === 1 ? " prueba" : " pruebas")) + "</div>" +
+    '<div class="scroll-x"><table class="cr-table"><thead><tr><th></th><th>Prueba</th><th>Esperado</th><th>Obtenido</th></tr></thead><tbody>' +
+      res.results.map(function(r, i){
+        var got = r.status === "timeout" ? "Tiempo excedido" : r.got;
+        return '<tr class="' + (r.pass ? "ok" : "bad") + '"><td class="cr-mark">' + (r.pass ? "✓" : "✕") + "</td>" +
+          "<td><pre>" + esc(q.tests[i].code) + "</pre></td><td><pre>" + esc(r.expected) + "</pre></td><td><pre>" + esc(got) + "</pre></td></tr>";
+      }).join("") +
+    "</tbody></table></div>" + penalty + "</div>";
 }
 
 /* ----------------------------- resultado ----------------------------- */
 function renderResult(){
   stopTimer();
-  S.finished = true;
+  dropEditor();
+  S.finished = true; S.finishing = false;
+  qnav.hidden = true;
   var s = stats();
-  var pct = Math.round(s.ok / s.total * 1000) / 10;
-  var pass = s.ok / s.total >= PASS;
+  var pct = Math.round(s.pts / s.total * 1000) / 10;
+  var pass = s.pts / s.total >= PASS - 1e-9;
+  var partial = Math.abs(s.pts - s.ok) > 1e-9; // algún CodeRunner con penalización
   var need = Math.ceil(PASS * s.total);
-  var misses = S.answers.filter(function(a){ return !a.correct; });
-  // con tiempo agotado, las que quedaron sin responder también van a repasar
-  var answeredQs = S.answers.map(function(a){ return a.q; });
-  S.order.forEach(function(q){
-    if (answeredQs.indexOf(q) === -1) misses.push({ q: q, correct: false, picked: null, skipped: true });
-  });
+  // falladas y sin responder, en el orden del intento
+  var misses = S.order.map(function(q, i){
+    return S.answers[i] || { q: q, correct: false, picked: null, skipped: true };
+  }).filter(function(a){ return !a.correct; });
   document.getElementById("barPos").textContent = s.answered + " de " + s.total + " respondidas";
   // la barra muestra el veredicto final (si se cortó por tiempo, «Faltan N» ya no aplica)
   var chip = document.getElementById("statChip");
@@ -522,14 +771,15 @@ function renderResult(){
         '<div class="score-meta">' +
           '<span class="verdict-chip ' + (pass ? "chip-ok" : "chip-bad") + '">' + (pass ? "Aprobado" : "Reprobado") + "</span>" +
           (S.timedOut ? '<span class="verdict-chip chip-live">Tiempo agotado</span>' : "") +
-          '<span style="color:var(--text-dim); font-size:13.5px">Se aprueba con 60% - ' + need + " de " + s.total + " preguntas</span>" +
+          '<span style="color:var(--text-dim); font-size:13.5px">' + (partial ? fmtPts(s.pts) + " de " + s.total + " puntos · " : "") +
+            "Se aprueba con 60% - " + need + " de " + s.total + " preguntas</span>" +
         "</div>" +
       "</div>" +
       '<div class="tally">' +
         '<div><div class="v num ok">' + s.ok + '</div><span class="eyebrow">Aciertos</span></div>' +
         '<div><div class="v num bad">' + s.bad + '</div><span class="eyebrow">Fallos</span></div>' +
         '<div><div class="v num">' + s.answered + (s.left ? '<span class="of"> / ' + s.total + "</span>" : "") + '</div><span class="eyebrow">Respondidas</span></div>' +
-        '<div><div class="v num">' + (pass ? "+" : "−") + Math.abs(s.ok - need) + '</div><span class="eyebrow">' + (pass ? "Sobre el corte" : "Bajo el corte") + "</span></div>" +
+        '<div><div class="v num">' + (pass ? "+" : "−") + fmtPts(Math.abs(s.pts - need)) + '</div><span class="eyebrow">' + (pass ? "Sobre el corte" : "Bajo el corte") + "</span></div>" +
       "</div>" +
       '<div class="row-end">' +
         '<button class="btn btn-ghost" id="again2">Cambiar examen</button>' +
@@ -550,7 +800,8 @@ function renderResult(){
             '<span class="txt">' + mdInline(firstLine(a.q)) + "</span></summary>" +
             '<div class="miss-body">' +
               '<div class="statement" style="font-size:15px">' + mdBlock(stripEnunciado(a.q.statement)) + "</div>" +
-              '<div class="ans-line"><span class="tag tag-bad">Tu respuesta</span><span>' + (a.skipped ? "Sin responder" : esc(a.picked || "-")) + "</span></div>" +
+              '<div class="ans-line"><span class="tag tag-bad">Tu respuesta</span><span>' + (a.skipped ? "Sin responder"
+                : a.q.type === "code" ? '<pre><code>' + esc(a.picked) + "</code></pre>" : esc(a.picked || "-")) + "</span></div>" +
               '<div class="ans-line"><span class="tag tag-ok">Correcta</span><span>' + answerHtml(a.q) + "</span></div>" +
             "</div></details>";
         }).join("") +
@@ -580,6 +831,7 @@ function answerHtml(q){
     }).join("<br>");
   }
   if (q.type === "selfgrade") return mdBlock(q.reveal);
+  if (q.type === "code") return '<pre><code>' + esc(q.solution) + "</code></pre>";
   return q.options.filter(function(o){ return o.correct; }).map(function(o){
     return '<strong>' + esc(o.key.toUpperCase()) + ".</strong> " +
       (o.text ? mdInline(o.text) : "") + (o.lines.length ? mdBlock(o.lines) : "");
@@ -602,6 +854,7 @@ document.querySelector(".brand").onclick = function(e){
 // Enter / espacio pasan a la siguiente pregunta una vez respondida
 document.addEventListener("keydown", function(e){
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.target.closest && e.target.closest("textarea, input, .ace_editor")) return; // escribiendo código
   if (S.answered && (e.key === "Enter" || e.key === " ")){
     var nb = document.getElementById("next");
     if (nb){ e.preventDefault(); nb.click(); }
@@ -621,6 +874,7 @@ function syncThemeBtn(){
   themeBtn.innerHTML = dark ? ICON_SUN : ICON_MOON;
   themeBtn.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
   themeBtn.title = themeBtn.getAttribute("aria-label");
+  if (codeEditor && codeEditor.ace) codeEditor.ace.setTheme(aceTheme());
 }
 themeBtn.onclick = function(){
   var t = currentTheme() === "dark" ? "light" : "dark";
