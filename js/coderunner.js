@@ -28,6 +28,9 @@ var CR = (function(){
     return ready;
   }
 
+  // cheerpjAddStringFile quedó obsoleta en CheerpJ 4
+  function addFile(path, text){ (window.cheerpOSAddStringFile || window.cheerpjAddStringFile)(path, text); }
+
   function loadScript(src){
     if (typeof cheerpjInit === "function") return Promise.resolve();
     return new Promise(function(resolve, reject){
@@ -183,11 +186,11 @@ var CR = (function(){
       var dir = "/str/"; // CheerpJ no admite subcarpetas en /str/
       var mainFile = publicClass(code) + ".java";
       var files = [dir + mainFile, dir + "__G.java"];
-      cheerpjAddStringFile(files[0], guardLoops(code));
-      cheerpjAddStringFile(files[1], GUARD);
+      addFile(files[0], guardLoops(code));
+      addFile(files[1], GUARD);
       tests.forEach(function(test, i){
         var f = dir + "__Prueba" + i + ".java";
-        cheerpjAddStringFile(f, testSource(i, code, test));
+        addFile(f, testSource(i, code, test));
         files.push(f);
       });
       var out = consoleEl();
