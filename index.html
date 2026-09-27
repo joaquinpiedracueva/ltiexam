@@ -45,6 +45,7 @@
         <button class="theme-btn" id="themeBtn" type="button"></button>
       </header>
 
+      <div class="content">
       <header class="bar" id="bar" hidden>
         <div class="bar-inner">
           <div class="bar-top">
@@ -55,7 +56,8 @@
             <div class="bar-stats">
               <span class="ok">Aciertos <b id="statOk">0</b></span>
               <span class="bad">Fallos <b id="statBad">0</b></span>
-              <span>Precisión <b id="statPct">&mdash;</b></span>
+              <span>Precisión <b id="statPct">0%</b></span>
+              <span class="timer" id="statTimeWrap" hidden>Tiempo <b id="statTime">0:00</b></span>
               <span class="verdict-chip chip-live" id="statChip"
                 >Sin responder</span
               >
@@ -77,6 +79,7 @@
       </header>
 
       <main id="app"></main>
+      </div>
 
       <footer class="site-footer">
         <a

@@ -1,7 +1,7 @@
 "use strict";
 
 /* ----------------------------- estado ------------------------------- */
-var S = { db: null, count: null, sem: null, mat: null, loading: false, order: [], idx: 0, answers: [], pick: null, answered: false, matchPick: {} };
+var S = { db: null, count: null, minutes: null, sem: null, mat: null, loading: false, finished: false, timedOut: false, deadline: 0, order: [], idx: 0, answers: [], pick: null, answered: false, matchPick: {} };
 var app = document.getElementById("app");
 var bar = document.getElementById("bar");
 var PASS = 0.6;
@@ -28,6 +28,7 @@ function loadPreset(){
   var sem = S.sem, mat = S.mat, file = CATALOG[sem].materias[mat].file;
   S.db = null; S.count = null; S.loading = true;
   renderSetup();
+  document.querySelector("#matDd .dd-btn").focus(); // el formulario se redibuja: no perder el foco
   fetch(file)
     .then(function(r){
       if (!r.ok) throw new Error("No se pudo cargar " + file + " (" + r.status + ").");
@@ -39,6 +40,7 @@ function loadPreset(){
       if (sem !== S.sem || mat !== S.mat) return; // cambió la selección mientras cargaba
       S.db = db; S.loading = false;
       renderSetup();
+      document.getElementById("start").focus(); // listo: Enter empieza
     })
     .catch(function(err){
       if (sem !== S.sem || mat !== S.mat) return;
@@ -51,39 +53,130 @@ function loadPreset(){
 
 function boot(){ renderSetup(); }
 
+// vacío, 0 o basura = sin límite; si no, entre 1 y 600 minutos
+function readMinutes(v){
+  v = Math.floor(Number(v));
+  if (!isFinite(v) || v < 1) return null;
+  return Math.min(v, 600);
+}
+
+/* ---------------------------- desplegables --------------------------- */
+// Reemplazo del <select> nativo con el estilo de la página. Teclado: flechas, Home/End,
+// Enter/espacio para elegir, Esc o Tab para cerrar. items: [{ label, disabled, note }].
+function dropdownHtml(id, label, items, sel, placeholder, disabled){
+  var cur = sel !== null && items[sel] ? items[sel].label : null;
+  return '<div class="pk-field">' +
+    '<span class="eyebrow" id="' + id + 'Lbl">' + label + "</span>" +
+    '<div class="dd" id="' + id + '">' +
+      '<button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false"' +
+        ' aria-labelledby="' + id + 'Lbl ' + id + 'Val"' + (disabled ? " disabled" : "") + ">" +
+        '<span class="dd-val' + (cur ? "" : " empty") + '" id="' + id + 'Val">' + esc(cur || placeholder) + "</span>" +
+      "</button>" +
+      '<ul class="dd-list" role="listbox" aria-labelledby="' + id + 'Lbl" hidden>' +
+        items.map(function(x, i){
+          return '<li role="option" id="' + id + "-" + i + '" data-i="' + i + '"' +
+            ' aria-selected="' + (i === sel) + '"' + (x.disabled ? ' aria-disabled="true"' : "") + ">" +
+            '<span>' + esc(x.label) + "</span>" + (x.note ? '<small>' + esc(x.note) + "</small>" : "") + "</li>";
+        }).join("") +
+      "</ul>" +
+    "</div>" +
+  "</div>";
+}
+
+function bindDropdown(id, onPick){
+  var root = document.getElementById(id);
+  var btn = root.querySelector(".dd-btn");
+  var list = root.querySelector(".dd-list");
+  var opts = Array.prototype.slice.call(list.children);
+  var active = -1;
+
+  function enabled(i){ return opts[i] && opts[i].getAttribute("aria-disabled") !== "true"; }
+  function setActive(i){
+    if (active >= 0) opts[active].classList.remove("active");
+    active = i;
+    if (i < 0){ btn.removeAttribute("aria-activedescendant"); return; }
+    opts[i].classList.add("active");
+    btn.setAttribute("aria-activedescendant", opts[i].id);
+    opts[i].scrollIntoView({ block: "nearest" });
+  }
+  function step(from, dir){
+    for (var i = from + dir; i >= 0 && i < opts.length; i += dir) if (enabled(i)) return i;
+    return from;
+  }
+  function open(){
+    if (btn.disabled || !list.hidden) return;
+    closeDropdowns();
+    list.hidden = false; btn.setAttribute("aria-expanded", "true"); root.classList.add("open");
+    var sel = opts.findIndex(function(o){ return o.getAttribute("aria-selected") === "true"; });
+    setActive(sel >= 0 ? sel : step(-1, 1));
+  }
+  function close(){
+    list.hidden = true; btn.setAttribute("aria-expanded", "false"); root.classList.remove("open");
+    setActive(-1);
+  }
+  function pick(i){ if (!enabled(i)) return; close(); btn.focus(); onPick(i); }
+  root._close = close;
+
+  btn.onclick = function(){ list.hidden ? open() : close(); };
+  btn.onkeydown = function(e){
+    var isOpen = !list.hidden;
+    if (e.key === "ArrowDown" || e.key === "ArrowUp"){
+      e.preventDefault();
+      if (!isOpen) return open();
+      setActive(step(active, e.key === "ArrowDown" ? 1 : -1));
+    } else if (e.key === "Home" && isOpen){ e.preventDefault(); setActive(step(-1, 1)); }
+    else if (e.key === "End" && isOpen){ e.preventDefault(); setActive(step(opts.length, -1)); }
+    else if ((e.key === "Enter" || e.key === " ") && isOpen){ e.preventDefault(); pick(active); }
+    else if (e.key === "Escape" && isOpen){ e.preventDefault(); close(); }
+    else if (e.key === "Tab" && isOpen){ close(); }
+  };
+  opts.forEach(function(o, i){
+    o.onmousedown = function(e){ e.preventDefault(); }; // no robarle el foco al botón
+    o.onclick = function(){ pick(i); };
+    o.onmousemove = function(){ if (enabled(i) && active !== i) setActive(i); };
+  });
+}
+
+function closeDropdowns(){
+  Array.prototype.forEach.call(document.querySelectorAll(".dd.open"), function(d){ d._close(); });
+}
+// clic afuera cierra
+document.addEventListener("mousedown", function(e){ if (!e.target.closest(".dd")) closeDropdowns(); });
+
 /* --------------------------- pantalla inicio ------------------------- */
 // Un solo formulario: semestre → materia (carga el banco) → cantidad → Empezar.
 function renderSetup(msg){
+  stopTimer();
   bar.hidden = true;
   var n = S.db ? S.db.questions.length : 0;
   if (n) S.count = clampCount(S.count, n);
   var hasSem = S.sem !== null;
 
-  // la primera opción es el placeholder: vacía y deshabilitada, así el select queda :invalid hasta elegir
-  function opts(list, sel, placeholder){
-    return '<option value="" disabled' + (sel === null ? " selected" : "") + ">" + placeholder + "</option>" +
-      list.map(function(x, i){
-        var empty = x.materias && !x.materias.length; // semestre todavía sin bancos
-        return '<option value="' + i + '"' + (i === sel ? " selected" : "") + (empty ? " disabled" : "") + ">" +
-          esc(x.label) + (empty ? " — próximamente" : "") + "</option>";
-      }).join("");
-  }
+  var semItems = CATALOG.map(function(x){
+    var empty = !x.materias.length; // semestre todavía sin bancos
+    return { label: x.label, disabled: empty, note: empty ? "próximamente" : "" };
+  });
+  var matItems = hasSem ? CATALOG[S.sem].materias.map(function(m){ return { label: m.label }; }) : [];
 
   app.innerHTML =
     '<section class="setup">' +
       '<form class="picker" id="picker" novalidate>' +
-        '<label class="pk-field"><span class="eyebrow">Semestre</span>' +
-          '<span class="select-wrap"><select id="semSel" required>' + opts(CATALOG, S.sem, "Seleccionar") + "</select></span></label>" +
-        '<label class="pk-field"><span class="eyebrow">Materia</span>' +
-          '<span class="select-wrap"><select id="matSel" required' + (hasSem ? "" : " disabled") + ">" +
-            opts(hasSem ? CATALOG[S.sem].materias : [], S.mat, "Seleccionar") + "</select></span></label>" +
+        dropdownHtml("semDd", "Semestre", semItems, S.sem, "Seleccionar", false) +
+        dropdownHtml("matDd", "Materia", matItems, S.mat, "Seleccionar", !hasSem) +
         '<div class="pk-field">' +
-          '<span class="pk-label"><label class="eyebrow" for="count">Preguntas</label>' +
-            '<button type="button" class="btn-link" id="allBtn"' + (n && S.count < n ? "" : " hidden") + ">Todas</button></span>" +
+          '<span class="pk-label"><label class="eyebrow" for="count">Preguntas</label></span>' +
           '<span class="count-wrap">' +
             '<input type="number" id="count" inputmode="numeric" min="1" step="1"' +
               (n ? ' max="' + n + '" value="' + S.count + '"' : ' disabled placeholder="—"') + ">" +
             (n ? '<span class="count-of">de ' + n + "</span>" : "") +
+          "</span>" +
+        "</div>" +
+        '<div class="pk-field">' +
+          '<span class="pk-label"><label class="eyebrow" for="minutes">Tiempo</label></span>' +
+          '<span class="count-wrap">' +
+            '<input type="number" id="minutes" inputmode="numeric" min="1" max="600" step="1" placeholder="—"' +
+              (S.minutes ? ' value="' + S.minutes + '"' : "") + ">" +
+            '<span class="count-of">min</span>' +
           "</span>" +
         "</div>" +
         '<button type="submit" class="btn" id="start"' + (S.db ? "" : " disabled") + ">" + (S.loading ? "Cargando…" : "Empezar") + "</button>" +
@@ -91,26 +184,29 @@ function renderSetup(msg){
       (msg ? '<p class="err">' + esc(msg) + "</p>" : "") +
     "</section>";
 
-  document.getElementById("semSel").onchange = function(){
-    S.sem = Number(this.value); S.mat = null; S.db = null; S.loading = false;
+  bindDropdown("semDd", function(i){
+    if (i === S.sem) return;
+    S.sem = i; S.mat = null; S.db = null; S.loading = false;
     renderSetup();
-  };
-  document.getElementById("matSel").onchange = function(){ S.mat = Number(this.value); loadPreset(); };
+    document.querySelector("#matDd .dd-btn").focus(); // seguir con la materia
+  });
+  bindDropdown("matDd", function(i){
+    if (i === S.mat && S.db) return;
+    S.mat = i; loadPreset();
+  });
 
   var countBox = document.getElementById("count");
-  var allBtn = document.getElementById("allBtn");
-  function syncAll(){ allBtn.hidden = !(n && S.count < n); }
   countBox.oninput = function(){
     var v = Math.floor(Number(countBox.value));
-    if (countBox.value !== "" && isFinite(v) && v >= 1){ S.count = Math.min(v, n); syncAll(); }
+    if (countBox.value !== "" && isFinite(v) && v >= 1) S.count = Math.min(v, n);
   };
-  countBox.onchange = function(){ S.count = clampCount(countBox.value, n); countBox.value = S.count; syncAll(); };
-  allBtn.onclick = function(){ S.count = n; countBox.value = n; syncAll(); };
+  countBox.onchange = function(){ S.count = clampCount(countBox.value, n); countBox.value = S.count; };
   // Enter en cualquier campo también envía
   document.getElementById("picker").onsubmit = function(e){
     e.preventDefault();
     if (!S.db) return;
     S.count = clampCount(countBox.value, n);
+    S.minutes = readMinutes(document.getElementById("minutes").value);
     beginAttempt();
   };
 }
@@ -121,9 +217,39 @@ function beginAttempt(){
   var n = clampCount(S.count, all.length);
   S.order = all.slice(0, n);
   S.idx = 0; S.answers = []; S.pick = null; S.answered = false; S.matchPick = {};
+  S.finished = false; S.timedOut = false;
   document.getElementById("barTitle").textContent = S.db.title;
   bar.hidden = false;
+  startTimer();
   renderQuestion();
+}
+
+/* ------------------------------ tiempo ------------------------------- */
+var timerId = null;
+var timeWrap = document.getElementById("statTimeWrap");
+var timeOut = document.getElementById("statTime");
+
+function startTimer(){
+  stopTimer();
+  timeWrap.hidden = !S.minutes;
+  if (!S.minutes) return;
+  S.deadline = Date.now() + S.minutes * 60000;
+  tick();
+  timerId = setInterval(tick, 250);
+}
+
+function stopTimer(){
+  if (timerId){ clearInterval(timerId); timerId = null; }
+}
+
+// se calcula contra la hora de fin, así no se atrasa si la pestaña queda en segundo plano
+function tick(){
+  var left = Math.max(0, S.deadline - Date.now());
+  var sec = Math.ceil(left / 1000);
+  var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), ss = sec % 60;
+  timeOut.textContent = (h ? h + ":" + String(m).padStart(2, "0") : m) + ":" + String(ss).padStart(2, "0");
+  timeWrap.classList.toggle("low", sec <= 60);
+  if (left <= 0){ S.timedOut = true; renderResult(); }
 }
 
 function stats(){
@@ -137,7 +263,7 @@ function updateBar(){
   document.getElementById("barPos").textContent = "Pregunta " + Math.min(S.idx + 1, s.total) + " de " + s.total;
   document.getElementById("statOk").textContent = s.ok;
   document.getElementById("statBad").textContent = s.bad;
-  document.getElementById("statPct").textContent = s.answered ? Math.round(s.ok / s.answered * 100) + "%" : "—";
+  document.getElementById("statPct").textContent = s.answered ? Math.round(s.ok / s.answered * 100) + "%" : "0%";
   document.getElementById("mOk").style.width = (s.ok / s.total * 100) + "%";
   document.getElementById("mBad").style.width = (s.bad / s.total * 100) + "%";
   var chip = document.getElementById("statChip");
@@ -349,12 +475,23 @@ function next(){
 
 /* ----------------------------- resultado ----------------------------- */
 function renderResult(){
+  stopTimer();
+  S.finished = true;
   var s = stats();
   var pct = Math.round(s.ok / s.total * 1000) / 10;
   var pass = s.ok / s.total >= PASS;
   var need = Math.ceil(PASS * s.total);
   var misses = S.answers.filter(function(a){ return !a.correct; });
-  document.getElementById("barPos").textContent = s.total + " de " + s.total + " respondidas";
+  // con tiempo agotado, las que quedaron sin responder también van a repasar
+  var answeredQs = S.answers.map(function(a){ return a.q; });
+  S.order.forEach(function(q){
+    if (answeredQs.indexOf(q) === -1) misses.push({ q: q, correct: false, picked: null, skipped: true });
+  });
+  document.getElementById("barPos").textContent = s.answered + " de " + s.total + " respondidas";
+  // la barra muestra el veredicto final (si se cortó por tiempo, «Faltan N» ya no aplica)
+  var chip = document.getElementById("statChip");
+  chip.className = "verdict-chip " + (pass ? "chip-ok" : "chip-bad");
+  chip.textContent = pass ? "Aprobado" : "Reprobado";
 
   app.innerHTML =
     '<section>' +
@@ -363,13 +500,14 @@ function renderResult(){
         '<div class="score-big ' + (pass ? "ok" : "bad") + '">' + pct + "%</div>" +
         '<div class="score-meta">' +
           '<span class="verdict-chip ' + (pass ? "chip-ok" : "chip-bad") + '">' + (pass ? "Aprobado" : "Reprobado") + "</span>" +
+          (S.timedOut ? '<span class="verdict-chip chip-live">Tiempo agotado</span>' : "") +
           '<span style="color:var(--text-dim); font-size:13.5px">Se aprueba con 60% — ' + need + " de " + s.total + " preguntas</span>" +
         "</div>" +
       "</div>" +
       '<div class="tally">' +
         '<div><div class="v num ok">' + s.ok + '</div><span class="eyebrow">Aciertos</span></div>' +
         '<div><div class="v num bad">' + s.bad + '</div><span class="eyebrow">Fallos</span></div>' +
-        '<div><div class="v num">' + s.total + '</div><span class="eyebrow">Respondidas</span></div>' +
+        '<div><div class="v num">' + s.answered + (s.left ? '<span class="of"> / ' + s.total + "</span>" : "") + '</div><span class="eyebrow">Respondidas</span></div>' +
         '<div><div class="v num">' + (pass ? "+" : "−") + Math.abs(s.ok - need) + '</div><span class="eyebrow">' + (pass ? "Sobre el corte" : "Bajo el corte") + "</span></div>" +
       "</div>" +
       '<div class="row-end">' +
@@ -380,14 +518,17 @@ function renderResult(){
     (misses.length ?
       '<section class="review">' +
         "<h2>Para repasar</h2>" +
-        '<p class="sub">' + misses.length + (misses.length === 1 ? " pregunta fallada." : " preguntas falladas.") + "</p>" +
+        '<p class="sub">' + [
+          s.bad ? s.bad + (s.bad === 1 ? " fallada" : " falladas") : "",
+          s.left ? s.left + " sin responder" : ""
+        ].filter(Boolean).join(" y ") + ".</p>" +
         misses.map(function(a){
           return '<details class="miss">' +
             '<summary><span class="qn">' + esc(a.q.label.replace(/^Pregunta\s*/i, "#")) + '</span>' +
             '<span class="txt">' + mdInline(firstLine(a.q)) + "</span></summary>" +
             '<div class="miss-body">' +
               '<div class="statement" style="font-size:15px">' + mdBlock(stripEnunciado(a.q.statement)) + "</div>" +
-              '<div class="ans-line"><span class="tag tag-bad">Tu respuesta</span><span>' + esc(a.picked || "—") + "</span></div>" +
+              '<div class="ans-line"><span class="tag tag-bad">Tu respuesta</span><span>' + (a.skipped ? "Sin responder" : esc(a.picked || "—")) + "</span></div>" +
               '<div class="ans-line"><span class="tag tag-ok">Correcta</span><span>' + answerHtml(a.q) + "</span></div>" +
             "</div></details>";
         }).join("") +
@@ -421,7 +562,7 @@ function answerHtml(q){
 
 /* --------------------------- navegación ------------------------------ */
 // examen empezado y sin terminar
-function inAttempt(){ return !bar.hidden && S.answers.length < S.order.length; }
+function inAttempt(){ return !bar.hidden && !S.finished; }
 
 // el logo vuelve al selector sin recargar (conserva semestre y materia)
 document.querySelector(".brand").onclick = function(e){
