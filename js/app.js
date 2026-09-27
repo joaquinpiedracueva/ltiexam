@@ -1,7 +1,7 @@
 "use strict";
 
 /* ----------------------------- estado ------------------------------- */
-var S = { db: null, dbName: "", count: null, tab: "preset", sem: null, mat: null, order: [], idx: 0, answers: [], pick: null, answered: false, matchPick: {} };
+var S = { db: null, count: null, sem: null, mat: null, loading: false, order: [], idx: 0, answers: [], pick: null, answered: false, matchPick: {} };
 var app = document.getElementById("app");
 var bar = document.getElementById("bar");
 var PASS = 0.6;
@@ -23,24 +23,28 @@ function clampCount(v, max){
 }
 
 /* --------------------------- carga del .md --------------------------- */
-function loadText(text, name){
-  var db = parseDB(text);
-  if (!db.questions.length) throw new Error("No se encontró ninguna pregunta con el formato «## Pregunta N».");
-  S.db = db; S.dbName = name; S.count = null;
-  return db;
-}
-
+// Se dispara al elegir la materia: trae el banco y habilita «Empezar».
 function loadPreset(){
-  var sem = CATALOG[S.sem], mat = sem.materias[S.mat];
-  fetch(mat.file)
+  var sem = S.sem, mat = S.mat, file = CATALOG[sem].materias[mat].file;
+  S.db = null; S.count = null; S.loading = true;
+  renderSetup();
+  fetch(file)
     .then(function(r){
-      if (!r.ok) throw new Error("No se pudo cargar " + mat.file + " (" + r.status + ").");
+      if (!r.ok) throw new Error("No se pudo cargar " + file + " (" + r.status + ").");
       return r.text();
     })
-    .then(function(text){ loadText(text, sem.label + " · " + mat.label); renderSetup(); })
+    .then(function(text){
+      var db = parseDB(text);
+      if (!db.questions.length) throw new Error("No se encontró ninguna pregunta en " + file + ".");
+      if (sem !== S.sem || mat !== S.mat) return; // cambió la selección mientras cargaba
+      S.db = db; S.loading = false;
+      renderSetup();
+    })
     .catch(function(err){
+      if (sem !== S.sem || mat !== S.mat) return;
+      S.loading = false;
       renderSetup(location.protocol === "file:"
-        ? "Los precargados necesitan abrir la página desde un servidor (no con doble clic). Usá «Archivo propio» o servila con, por ejemplo, python3 -m http.server."
+        ? "La página tiene que abrirse desde un servidor (no con doble clic), por ejemplo con python3 -m http.server."
         : err.message);
     });
 }
@@ -48,56 +52,13 @@ function loadPreset(){
 function boot(){ renderSetup(); }
 
 /* --------------------------- pantalla inicio ------------------------- */
+// Un solo formulario: semestre → materia (carga el banco) → cantidad → Empezar.
 function renderSetup(msg){
   bar.hidden = true;
   var n = S.db ? S.db.questions.length : 0;
   if (n) S.count = clampCount(S.count, n);
+  var hasSem = S.sem !== null;
 
-  app.innerHTML =
-    '<section class="card pad setup">' +
-      '<span class="eyebrow">Simulador de examen · Licenciatura en Tecnologías de la Información (LTI) · UTEC</span>' +
-      "<h1>" + (S.db ? esc(S.db.title) : "Carga tu banco de preguntas") + "</h1>" +
-      '<p class="lede">Las preguntas salen en orden aleatorio en cada intento, se responden de una en una y no se puede volver atrás. El examen completo vale 100% y se aprueba con <strong>60%</strong>.</p>' +
-      '<div id="dbSlot"></div>' +
-      '<div class="field"' + (S.db ? "" : " hidden") + ">" +
-        '<span class="eyebrow">Cuántas preguntas</span>' +
-        '<div class="size-row">' +
-          '<input type="number" id="count" class="num-input" inputmode="numeric" min="1" max="' + n + '" step="1" value="' + (n ? S.count : "") + '" aria-label="Cantidad de preguntas">' +
-          '<span class="size-hint">de ' + n + " disponibles</span>" +
-          '<button class="chip" id="allBtn" aria-pressed="' + (S.count === n) + '">Todas</button>' +
-        "</div>" +
-      "</div>" +
-      (msg ? '<p class="err">' + esc(msg) + "</p>" : "") +
-      '<div class="row-end"><button class="btn" id="start"' + (S.db ? "" : " disabled") + ">Empezar</button></div>" +
-    "</section>";
-
-  var slot = document.getElementById("dbSlot");
-  if (S.db){
-    slot.innerHTML =
-      '<div class="db-loaded">' +
-        '<span class="dot"></span>' +
-        '<span class="name">' + esc(S.dbName) + "</span>" +
-        '<span class="count num">' + n + " preguntas</span>" +
-        '<button class="btn-link" id="change">Cambiar base</button>' +
-      "</div>";
-    document.getElementById("change").onclick = function(){ S.db = null; S.count = null; renderSetup(); };
-  } else {
-    slot.innerHTML =
-      '<div class="tabs" role="tablist">' +
-        '<button class="tab" role="tab" data-tab="preset" aria-selected="' + (S.tab === "preset") + '">Precargados</button>' +
-        '<button class="tab" role="tab" data-tab="file" aria-selected="' + (S.tab === "file") + '">Archivo propio</button>' +
-      "</div>" +
-      '<div id="tabBody"></div>';
-    Array.prototype.forEach.call(slot.querySelectorAll(".tab"), function(t){
-      t.onclick = function(){ S.tab = t.dataset.tab; renderSetup(); };
-    });
-    if (S.tab === "preset") renderPresetTab(document.getElementById("tabBody"));
-    else renderFileTab(document.getElementById("tabBody"));
-  }
-  bindCount(n);
-}
-
-function renderPresetTab(box){
   // la primera opción es el placeholder: vacía y deshabilitada, así el select queda :invalid hasta elegir
   function opts(list, sel, placeholder){
     return '<option value="" disabled' + (sel === null ? " selected" : "") + ">" + placeholder + "</option>" +
@@ -107,75 +68,51 @@ function renderPresetTab(box){
           esc(x.label) + (empty ? " — próximamente" : "") + "</option>";
       }).join("");
   }
-  var hasSem = S.sem !== null;
-  box.innerHTML =
-    '<div class="preset">' +
-      '<label><span class="eyebrow">Semestre</span><span class="select-wrap"><select id="semSel" required>' + opts(CATALOG, S.sem, "Seleccionar semestre") + "</select></span></label>" +
-      '<label><span class="eyebrow">Materia</span><span class="select-wrap"><select id="matSel" required' + (hasSem ? "" : " disabled") + ">" +
-        opts(hasSem ? CATALOG[S.sem].materias : [], S.mat, "Seleccionar materia") + "</select></span></label>" +
-      '<button class="btn btn-ghost" id="loadPreset"' + (hasSem && S.mat !== null ? "" : " disabled") + ">Cargar</button>" +
-    "</div>";
-  document.getElementById("semSel").onchange = function(){ S.sem = Number(this.value); S.mat = null; renderPresetTab(box); };
-  document.getElementById("matSel").onchange = function(){ S.mat = Number(this.value); document.getElementById("loadPreset").disabled = false; };
-  document.getElementById("loadPreset").onclick = function(){ this.disabled = true; this.textContent = "Cargando…"; loadPreset(); };
-}
 
-function renderFileTab(box){
-  box.innerHTML =
-    '<div class="drop" id="drop">' +
-      '<button class="btn btn-ghost" id="pick">Elegir archivo .md</button>' +
-      "<p>o arrastralo acá &mdash; formato <code>## Pregunta N</code> con alternativas marcadas con " + OK + "</p>" +
-      '<input type="file" id="file" accept=".md,.markdown,.txt,text/markdown" hidden>' +
-    "</div>";
-  var drop = document.getElementById("drop");
-  var file = document.getElementById("file");
-  document.getElementById("pick").onclick = function(){ file.click(); };
-  file.onchange = function(){ if (file.files[0]) readFile(file.files[0]); };
-  ["dragenter", "dragover"].forEach(function(ev){
-    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("over"); });
-  });
-  ["dragleave", "drop"].forEach(function(ev){
-    drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove("over"); });
-  });
-  drop.addEventListener("drop", function(e){
-    var f = e.dataTransfer && e.dataTransfer.files[0];
-    if (f) readFile(f);
-  });
-}
+  app.innerHTML =
+    '<section class="setup">' +
+      '<form class="picker" id="picker" novalidate>' +
+        '<label class="pk-field"><span class="eyebrow">Semestre</span>' +
+          '<span class="select-wrap"><select id="semSel" required>' + opts(CATALOG, S.sem, "Seleccionar") + "</select></span></label>" +
+        '<label class="pk-field"><span class="eyebrow">Materia</span>' +
+          '<span class="select-wrap"><select id="matSel" required' + (hasSem ? "" : " disabled") + ">" +
+            opts(hasSem ? CATALOG[S.sem].materias : [], S.mat, "Seleccionar") + "</select></span></label>" +
+        '<div class="pk-field">' +
+          '<span class="pk-label"><label class="eyebrow" for="count">Preguntas</label>' +
+            '<button type="button" class="btn-link" id="allBtn"' + (n && S.count < n ? "" : " hidden") + ">Todas</button></span>" +
+          '<span class="count-wrap">' +
+            '<input type="number" id="count" inputmode="numeric" min="1" step="1"' +
+              (n ? ' max="' + n + '" value="' + S.count + '"' : ' disabled placeholder="—"') + ">" +
+            (n ? '<span class="count-of">de ' + n + "</span>" : "") +
+          "</span>" +
+        "</div>" +
+        '<button type="submit" class="btn" id="start"' + (S.db ? "" : " disabled") + ">" + (S.loading ? "Cargando…" : "Empezar") + "</button>" +
+      "</form>" +
+      (msg ? '<p class="err">' + esc(msg) + "</p>" : "") +
+    "</section>";
 
-function bindCount(n){
+  document.getElementById("semSel").onchange = function(){
+    S.sem = Number(this.value); S.mat = null; S.db = null; S.loading = false;
+    renderSetup();
+  };
+  document.getElementById("matSel").onchange = function(){ S.mat = Number(this.value); loadPreset(); };
+
   var countBox = document.getElementById("count");
   var allBtn = document.getElementById("allBtn");
-  function syncCount(){
-    S.count = clampCount(countBox.value, n);
-    countBox.value = S.count;
-    allBtn.setAttribute("aria-pressed", String(S.count === n));
-  }
-  if (countBox){
-    countBox.oninput = function(){
-      var v = Math.floor(Number(countBox.value));
-      if (countBox.value !== "" && isFinite(v) && v >= 1){
-        S.count = Math.min(v, n);
-        allBtn.setAttribute("aria-pressed", String(S.count === n));
-      }
-    };
-    countBox.onchange = syncCount;
-    countBox.onkeydown = function(e){
-      if (e.key === "Enter"){ e.preventDefault(); syncCount(); beginAttempt(); }
-    };
-    allBtn.onclick = function(){ countBox.value = n; syncCount(); };
-  }
-  var start = document.getElementById("start");
-  if (start) start.onclick = function(){ if (countBox) syncCount(); beginAttempt(); };
-}
-
-function readFile(f){
-  var r = new FileReader();
-  r.onload = function(){
-    try { loadText(r.result, f.name); renderSetup(); }
-    catch(err){ renderSetup(err.message); }
+  function syncAll(){ allBtn.hidden = !(n && S.count < n); }
+  countBox.oninput = function(){
+    var v = Math.floor(Number(countBox.value));
+    if (countBox.value !== "" && isFinite(v) && v >= 1){ S.count = Math.min(v, n); syncAll(); }
   };
-  r.readAsText(f);
+  countBox.onchange = function(){ S.count = clampCount(countBox.value, n); countBox.value = S.count; syncAll(); };
+  allBtn.onclick = function(){ S.count = n; countBox.value = n; syncAll(); };
+  // Enter en cualquier campo también envía
+  document.getElementById("picker").onsubmit = function(e){
+    e.preventDefault();
+    if (!S.db) return;
+    S.count = clampCount(countBox.value, n);
+    beginAttempt();
+  };
 }
 
 /* ------------------------------ intento ------------------------------ */
@@ -208,10 +145,12 @@ function updateBar(){
   if (!s.answered){ chip.classList.add("chip-live"); chip.textContent = "Sin responder"; }
   else if (s.ok / s.total >= PASS){ chip.classList.add("chip-ok"); chip.textContent = "Aprobado asegurado"; }
   else if ((s.ok + s.left) / s.total < PASS){ chip.classList.add("chip-bad"); chip.textContent = "Ya no alcanza"; }
-  else { chip.classList.add("chip-live"); chip.textContent = "Faltan " + (Math.ceil(PASS * s.total) - s.ok) + " aciertos"; }
+  else {
+    var need = Math.ceil(PASS * s.total) - s.ok;
+    chip.classList.add("chip-live");
+    chip.textContent = need === 1 ? "Falta 1 acierto" : "Faltan " + need + " aciertos";
+  }
 }
-
-var TYPE_LABEL = { single: "Opción múltiple", multi: "Varias correctas", match: "Emparejar", selfgrade: "Completar" };
 
 function renderQuestion(){
   var q = S.order[S.idx];
@@ -240,17 +179,11 @@ function renderQuestion(){
   }
 
   app.innerHTML =
-    '<section class="card pad" style="margin-top:1.6rem">' +
-      '<div class="q-head">' +
-        '<span class="n">' + esc(q.label) + "</span>" +
-        '<span class="rule"></span>' +
-        '<span class="eyebrow">' + (TYPE_LABEL[q.type] || "") + "</span>" +
-      "</div>" +
+    '<section>' +
       '<div class="statement">' + mdBlock(stripEnunciado(q.statement)) + "</div>" +
       optsHtml +
       '<div id="fb"></div>' +
       '<div class="row-end" id="actions"></div>' +
-      '<p class="hint">Elegí con <kbd>1</kbd>&ndash;<kbd>9</kbd>, continuá con <kbd>Enter</kbd>. No se puede volver atrás.</p>' +
     "</section>";
   window.scrollTo(0, 0);
 
@@ -396,19 +329,10 @@ function finishAnswer(q, correct, picked){
     v.className = "verdict " + (correct ? "ok" : "bad");
     v.innerHTML = '<span aria-hidden="true">' + (correct ? "✓" : "✕") + "</span> " +
       (correct ? "Marcada como acierto" : "Marcada como fallo");
-  } else {
-    var right = q.type === "match"
-      ? q.options.map(function(o){
-          var c = o.children.filter(function(x){ return x.correct; })[0];
-          return o.text + ": " + (c ? c.text : "");
-        }).join(" · ")
-      : q.options.filter(function(o){ return o.correct; }).map(function(o){ return o.key.toUpperCase(); }).join(", ");
+  } else if (q.reveal.length || q.note.length){
+    // el acierto/fallo ya se ve en el color de las opciones; solo se agrega la explicación del banco, si hay
     fb.innerHTML =
-      '<div class="feedback">' +
-        '<div class="verdict ' + (correct ? "ok" : "bad") + '">' +
-          '<span aria-hidden="true">' + (correct ? "✓" : "✕") + "</span>" +
-          (correct ? "Correcto" : "Incorrecto — la respuesta es " + esc(right).replace(/\*\*/g, "")) +
-        "</div>" +
+      '<div class="explain">' +
         (q.reveal.length ? '<div class="reveal">' + mdBlock(q.reveal) + "</div>" : "") +
         (q.note.length ? mdBlock(q.note) : "") +
       "</div>";
@@ -433,7 +357,7 @@ function renderResult(){
   document.getElementById("barPos").textContent = s.total + " de " + s.total + " respondidas";
 
   app.innerHTML =
-    '<section class="card pad" style="margin-top:1.6rem">' +
+    '<section>' +
       '<span class="eyebrow">Resultado del intento</span>' +
       '<div class="score-head" style="margin-top:.6rem">' +
         '<div class="score-big ' + (pass ? "ok" : "bad") + '">' + pct + "%</div>" +
@@ -449,7 +373,7 @@ function renderResult(){
         '<div><div class="v num">' + (pass ? "+" : "−") + Math.abs(s.ok - need) + '</div><span class="eyebrow">' + (pass ? "Sobre el corte" : "Bajo el corte") + "</span></div>" +
       "</div>" +
       '<div class="row-end">' +
-        '<button class="btn btn-ghost" id="again2">Cambiar base</button>' +
+        '<button class="btn btn-ghost" id="again2">Cambiar examen</button>' +
         '<button class="btn" id="again">Reintentar (nuevo orden)</button>' +
       "</div>" +
     "</section>" +
@@ -495,21 +419,25 @@ function answerHtml(q){
   }).join("<br>");
 }
 
+/* --------------------------- navegación ------------------------------ */
+// examen empezado y sin terminar
+function inAttempt(){ return !bar.hidden && S.answers.length < S.order.length; }
+
+// el logo vuelve al selector sin recargar (conserva semestre y materia)
+document.querySelector(".brand").onclick = function(e){
+  e.preventDefault();
+  if (inAttempt() && !confirm("¿Salir del examen? Se pierde el progreso de este intento.")) return;
+  S.order = []; S.answered = false;
+  renderSetup();
+};
+
 /* ----------------------------- teclado ------------------------------- */
+// Enter / espacio pasan a la siguiente pregunta una vez respondida
 document.addEventListener("keydown", function(e){
   if (e.metaKey || e.ctrlKey || e.altKey) return;
   if (S.answered && (e.key === "Enter" || e.key === " ")){
     var nb = document.getElementById("next");
     if (nb){ e.preventDefault(); nb.click(); }
-    return;
-  }
-  if (!S.order.length || S.answered) return;
-  var n = Number(e.key);
-  if (n >= 1 && n <= 9){
-    var list = app.querySelectorAll(".opt");
-    if (!list.length) list = app.querySelectorAll(".tile");
-    var b = list[n - 1];
-    if (b){ e.preventDefault(); b.click(); }
   }
 });
 

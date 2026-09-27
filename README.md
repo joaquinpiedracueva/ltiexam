@@ -27,14 +27,11 @@ Simulador de exámenes que arma un cuestionario a partir de una base de pregunta
 
 ## Uso
 
-Abrí `index.html` y elegí la base desde una de dos pestañas:
+Abrí la página, elegí semestre y materia y tocá **Empezar**. Los bancos se cargan con
+`fetch`, así que la página tiene que servirse por HTTP (GitHub Pages, o
+`python3 -m http.server` en local); con doble clic (`file://`) no cargan.
 
-- **Precargados**: elegís semestre y materia de los bancos en `bank/`. Se cargan con
-  `fetch`, así que la página tiene que servirse por HTTP (GitHub Pages, o
-  `python3 -m http.server` en local); con doble clic (`file://`) no funcionan.
-- **Archivo propio**: elegís o arrastrás cualquier `.md` con el formato de arriba
-  (esto sí anda con doble clic).
-
+Los bancos se manejan solo desde el código, no se suben archivos desde la página.
 Para sumar un precargado, poné el `.md` en la carpeta de su semestre (`bank/semestre-1/` … `bank/semestre-8/`)
 y agregalo a la lista de ese número en `js/catalog.js`. Los semestres sin materias aparecen
 en el selector como «próximamente».
@@ -57,7 +54,7 @@ en el selector como «próximamente».
 | `js/parser.js` | Lee el `.md` y arma las preguntas. |
 | `js/markdown.js` | Convierte el Markdown de enunciados y alternativas a HTML. |
 | `js/catalog.js` | Lista de bancos precargados por semestre y materia. |
-| `js/app.js` | Pantallas, examen, resultado, teclado y selector de tema. |
+| `js/app.js` | Selector de examen, preguntas, resultado, teclado y tema. |
 | `assets/` | Favicon y mosaico de fondo. |
 | `bank/semestre-N/` | Bancos por semestre (1 a 8). |
 | `bank/semestre-2/programacion-sql.md` | Semestre 2 · Programación SQL — 308 preguntas. |

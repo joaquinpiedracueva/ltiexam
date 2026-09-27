@@ -1,4 +1,4 @@
-# SQL
+# Programación SQL
 
 ## Pregunta 1
 
@@ -154,12 +154,6 @@
 - b. SELECT producto prod, AVG(precio) FROM ventas WHERE cantidad > 100 GROUP BY producto;
 - c. SELECT producto prod, AVG(precio) FROM ventas HAVING SUM(cantidad) > 100 GROUP BY producto;
 - d. SELECT producto As prod, AVG(precio) FROM ventas WHERE SUM(cantidad) > 100 GROUP BY producto;
-
-> **Nota:** ninguna opción es perfecta. La (a) es la única sintácticamente válida (`GROUP BY` antes de `HAVING`), pero usa `SUM(precio)` en lugar de `AVG(precio)`. La (c) tiene la agregación correcta pero invierte el orden de las cláusulas, por lo que da error en PostgreSQL. La consulta realmente correcta sería:
->
-> ```sql
-> SELECT producto, AVG(precio) FROM ventas GROUP BY producto HAVING SUM(cantidad) > 100;
-> ```
 
 ## Pregunta 17
 
