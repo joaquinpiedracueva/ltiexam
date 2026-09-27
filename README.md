@@ -27,10 +27,17 @@ Simulador de exámenes que arma un cuestionario a partir de una base de pregunta
 
 ## Uso
 
-Abrí `index.html` en el navegador (doble clic alcanza, no necesita servidor) y elegí o
-arrastrá el `.md` con el formato de arriba — por ejemplo `db-cuestionarios-sql.md`.
+Abrí `index.html` y elegí la base desde una de dos pestañas:
 
-Ninguna base viene precargada ni queda guardada: cada vez arrancás eligiendo el archivo.
+- **Precargados**: elegís semestre y materia de los bancos en `bank/`. Se cargan con
+  `fetch`, así que la página tiene que servirse por HTTP (GitHub Pages, o
+  `python3 -m http.server` en local); con doble clic (`file://`) no funcionan.
+- **Archivo propio**: elegís o arrastrás cualquier `.md` con el formato de arriba
+  (esto sí anda con doble clic).
+
+Para sumar un precargado, poné el `.md` en la carpeta de su semestre (`bank/semestre-1/` … `bank/semestre-8/`)
+y agregalo a la lista de ese número en `js/catalog.js`. Los semestres sin materias aparecen
+en el selector como «próximamente».
 
 ## Cómo funciona el examen
 
@@ -45,5 +52,12 @@ Ninguna base viene precargada ni queda guardada: cada vez arrancás eligiendo el
 
 | Archivo | Contenido |
 |---|---|
-| `index.html` | El simulador (una sola página, sin dependencias). |
-| `db-cuestionarios-sql.md` | Base de SQL / PostgreSQL — 308 preguntas. |
+| `index.html` | Estructura de la página (y el logo de UTEC inline). |
+| `css/styles.css` | Estilos y temas claro/oscuro. |
+| `js/parser.js` | Lee el `.md` y arma las preguntas. |
+| `js/markdown.js` | Convierte el Markdown de enunciados y alternativas a HTML. |
+| `js/catalog.js` | Lista de bancos precargados por semestre y materia. |
+| `js/app.js` | Pantallas, examen, resultado, teclado y selector de tema. |
+| `assets/` | Favicon y mosaico de fondo. |
+| `bank/semestre-N/` | Bancos por semestre (1 a 8). |
+| `bank/semestre-2/programacion-sql.md` | Semestre 2 · Programación SQL — 308 preguntas. |
