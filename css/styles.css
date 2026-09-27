@@ -61,6 +61,8 @@ body{
 .content{flex:1; display:flex; flex-direction:column; gap:5px}
 main{padding:2.25rem 2.5rem 3rem; flex:1}
 @media (max-width:560px){
+  /* al estirar el scroll (rebote) se ve el lienzo: que sea del color del header/pie, no el mosaico */
+  html{background:var(--surface)}
   .page, .content{gap:4px}
   .page{width:100%}
   .site-header, header.bar, .qnav, main, .site-footer{border-left:none; border-right:none}
@@ -89,7 +91,7 @@ button{font:inherit; color:inherit; cursor:pointer}
   display:grid; place-items:center; width:34px; height:34px; padding:0; flex:none;
   background:none; border:1px solid var(--border); color:var(--text-dim);
 }
-.theme-btn:hover{color:var(--text); background:var(--surface-2)}
+@media (hover:hover){ .theme-btn:hover{color:var(--text); background:var(--surface-2)} }
 .theme-btn svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 
 /* ---------- pie ---------- */
@@ -100,7 +102,7 @@ button{font:inherit; color:inherit; cursor:pointer}
 .ft-item{
   display:inline-flex; align-items:center; gap:.45rem; color:var(--text-dim); text-decoration:none; min-width:0;
 }
-a.ft-item:hover{color:var(--text)}
+@media (hover:hover){ a.ft-item:hover{color:var(--text)} }
 .ft-item span{overflow-wrap:anywhere}
 .ft-item svg{width:17px; height:17px; flex:none; fill:currentColor}
 .ft-item svg.stroke{fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
@@ -214,10 +216,10 @@ main:has(> .setup){display:flex; flex-direction:column; justify-content:center}
   border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
   padding:.6rem 1.15rem; font-weight:500; font-size:14.5px;
 }
-.btn:hover{filter:brightness(1.07)}
+@media (hover:hover){ .btn:hover{filter:brightness(1.07)} }
 .btn[disabled]{opacity:.45; cursor:not-allowed; filter:none}
 .btn-ghost{background:transparent; color:var(--text); border-color:var(--border)}
-.btn-ghost:hover{background:var(--surface-2); filter:none}
+@media (hover:hover){ .btn-ghost:hover{background:var(--surface-2); filter:none} }
 .btn-link{background:none; border:none; padding:0; color:var(--accent-text); text-decoration:underline; font-size:13px}
 .row-end{display:flex; justify-content:flex-end; gap:.6rem; margin-top:1.6rem; flex-wrap:wrap}
 .err{color:var(--bad); font-size:13.5px; margin-top:.8rem}
@@ -248,7 +250,7 @@ th{background:var(--surface-2); font-weight:600; font-size:12px; letter-spacing:
   background:var(--surface); border:1px solid var(--border);
   padding:.7rem .85rem; transition:background .12s;
 }
-.opt:hover:not(.locked){background:var(--surface-2)}
+@media (hover:hover){ .opt:hover:not(.locked){background:var(--surface-2)} }
 .opt .key{
   font-size:12px; font-weight:600; line-height:1.5;
   color:var(--text-dim); flex:none; min-width:1.5em; text-align:center;
@@ -278,7 +280,7 @@ th{background:var(--surface-2); font-weight:600; font-size:12px; letter-spacing:
   border:1px solid var(--border); background:var(--surface-2);
   padding:.35rem .7rem; font-size:13.5px;
 }
-.tile:hover:not(.locked){background:var(--surface-3)}
+@media (hover:hover){ .tile:hover:not(.locked){background:var(--surface-3)} }
 .tile[aria-pressed="true"]{border-color:var(--accent); background:var(--accent-soft); font-weight:500}
 .tile.is-ok{border-color:var(--ok-line); background:var(--ok-soft); color:var(--ok)}
 .tile.is-bad{border-color:var(--bad-line); background:var(--bad-soft); color:var(--bad)}
@@ -370,7 +372,7 @@ details.miss[open] > summary{border-bottom:1px solid var(--border)}
   width:2rem; height:2rem; flex:none; padding:0; font-size:13px; line-height:1;
   background:var(--surface-2); color:var(--text-dim); border:1px solid var(--border);
 }
-.qn-sq:hover{border-color:var(--border-strong); color:var(--text)}
+@media (hover:hover){ .qn-sq:hover{border-color:var(--border-strong); color:var(--text)} }
 .qn-sq.ok{background:var(--ok); border-color:var(--ok); color:var(--surface)}
 .qn-sq.bad{background:var(--bad); border-color:var(--bad); color:var(--surface)}
 .qn-sq.cur{outline:2px solid var(--accent); outline-offset:1px}
