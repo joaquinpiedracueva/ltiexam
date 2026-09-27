@@ -9,12 +9,17 @@ function esc(s){
 
 var SENT = "\u0001"; // marcador interno para los tramos `code`
 
+var ESC = "\u0002"; // marcador interno para los caracteres escapados con \
+
 function mdInline(s){
   var codes = [];
   s = String(s).replace(/`([^`]+)`/g, function(m, c){ codes.push(c); return SENT + (codes.length - 1) + SENT; });
+  // escapes de Markdown (\* \_ …): el carácter se muestra tal cual y no cuenta como formato
+  s = s.replace(/\\([\\`*_{}\[\]()#+\-.!|>~])/g, function(m, c){ return ESC + c.charCodeAt(0) + ESC; });
   s = esc(s);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+  s = s.replace(new RegExp(ESC + "(\\d+)" + ESC, "g"), function(m, n){ return esc(String.fromCharCode(Number(n))); });
   return s.replace(new RegExp(SENT + "(\\d+)" + SENT, "g"), function(m, i){
     return "<code>" + esc(codes[Number(i)]) + "</code>";
   });

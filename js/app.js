@@ -154,7 +154,7 @@ function renderSetup(msg){
 
   var semItems = CATALOG.map(function(x){
     var empty = !x.materias.length; // semestre todavía sin bancos
-    return { label: x.label, disabled: empty, note: empty ? "próximamente" : "" };
+    return { label: x.label, disabled: empty };
   });
   var matItems = hasSem ? CATALOG[S.sem].materias.map(function(m){ return { label: m.label }; }) : [];
 
@@ -167,14 +167,14 @@ function renderSetup(msg){
           '<span class="pk-label"><label class="eyebrow" for="count">Preguntas</label></span>' +
           '<span class="count-wrap">' +
             '<input type="number" id="count" inputmode="numeric" min="1" step="1"' +
-              (n ? ' max="' + n + '" value="' + S.count + '"' : ' disabled placeholder="—"') + ">" +
+              (n ? ' max="' + n + '" value="' + S.count + '"' : ' disabled placeholder="-"') + ">" +
             (n ? '<span class="count-of">de ' + n + "</span>" : "") +
           "</span>" +
         "</div>" +
         '<div class="pk-field">' +
           '<span class="pk-label"><label class="eyebrow" for="minutes">Tiempo</label></span>' +
           '<span class="count-wrap">' +
-            '<input type="number" id="minutes" inputmode="numeric" min="1" max="600" step="1" placeholder="—"' +
+            '<input type="number" id="minutes" inputmode="numeric" min="1" max="600" step="1" placeholder="-"' +
               (S.minutes ? ' value="' + S.minutes + '"' : "") + ">" +
             '<span class="count-of">min</span>' +
           "</span>" +
@@ -212,16 +212,37 @@ function renderSetup(msg){
 }
 
 /* ------------------------------ intento ------------------------------ */
-function beginAttempt(){
-  var all = shuffle(S.db.questions);
-  var n = clampCount(S.count, all.length);
-  S.order = all.slice(0, n);
+// pool: preguntas puntuales (p. ej. las falladas); sin pool, el examen completo según la cantidad elegida
+function beginAttempt(pool){
+  var all = shuffle(pool || S.db.questions);
+  var n = pool ? all.length : clampCount(S.count, all.length);
+  S.order = all.slice(0, n).map(shuffleOptions);
+  S.review = !!pool;
   S.idx = 0; S.answers = []; S.pick = null; S.answered = false; S.matchPick = {};
   S.finished = false; S.timedOut = false;
-  document.getElementById("barTitle").textContent = S.db.title;
+  document.getElementById("barTitle").textContent = S.db.title + (S.review ? " · falladas" : "");
   bar.hidden = false;
   startTimer();
   renderQuestion();
+}
+
+/* ------------------------ mezclar alternativas ------------------------ */
+// Opciones que nombran a otras por letra o posición: mezclarlas rompería el sentido.
+var REFS_OTHERS = /\(\s*[a-e]\s*(?:y|,|e|o)\s*[a-e]\s*\)|\b(?:las|todas las|ninguna de las)\s+(?:opciones\s+)?anteriores\b|\b(?:opci[oó]n|alternativa)\s+\(?[a-e]\)?(?![\wáéíóú])/i;
+
+// Copia de la pregunta con las alternativas en orden aleatorio y las letras reasignadas por
+// posición (a, b, c…), así lo que se ve, «tu respuesta» y «correcta» usan la misma letra.
+function shuffleOptions(q){
+  if (q.type === "match"){
+    return Object.assign({}, q, { options: q.options.map(function(o){
+      return Object.assign({}, o, { children: shuffle(o.children) });
+    }) });
+  }
+  if (q.options.some(function(o){ return REFS_OTHERS.test(o.text); })) return q;
+  var letters = /^[a-z]$/.test(q.options[0].key);
+  return Object.assign({}, q, { options: shuffle(q.options).map(function(o, i){
+    return Object.assign({}, o, { key: letters ? String.fromCharCode(97 + i) : String(i + 1) });
+  }) });
 }
 
 /* ------------------------------ tiempo ------------------------------- */
@@ -395,7 +416,7 @@ function answer(){
     });
     picked = q.options.map(function(o, gi){
       var c = o.children[S.matchPick[gi]];
-      return o.text + ": " + (c ? c.text : "—");
+      return o.text + ": " + (c ? c.text : "-");
     }).join(" · ");
   } else if (q.type === "multi"){
     var chosen = Array.prototype.map.call(app.querySelectorAll(".opt.picked"), function(b){ return Number(b.dataset.i); });
@@ -501,7 +522,7 @@ function renderResult(){
         '<div class="score-meta">' +
           '<span class="verdict-chip ' + (pass ? "chip-ok" : "chip-bad") + '">' + (pass ? "Aprobado" : "Reprobado") + "</span>" +
           (S.timedOut ? '<span class="verdict-chip chip-live">Tiempo agotado</span>' : "") +
-          '<span style="color:var(--text-dim); font-size:13.5px">Se aprueba con 60% — ' + need + " de " + s.total + " preguntas</span>" +
+          '<span style="color:var(--text-dim); font-size:13.5px">Se aprueba con 60% - ' + need + " de " + s.total + " preguntas</span>" +
         "</div>" +
       "</div>" +
       '<div class="tally">' +
@@ -512,6 +533,7 @@ function renderResult(){
       "</div>" +
       '<div class="row-end">' +
         '<button class="btn btn-ghost" id="again2">Cambiar examen</button>' +
+        (misses.length ? '<button class="btn btn-ghost" id="againMiss">Repetir falladas (' + misses.length + ")</button>" : "") +
         '<button class="btn" id="again">Reintentar (nuevo orden)</button>' +
       "</div>" +
     "</section>" +
@@ -528,14 +550,18 @@ function renderResult(){
             '<span class="txt">' + mdInline(firstLine(a.q)) + "</span></summary>" +
             '<div class="miss-body">' +
               '<div class="statement" style="font-size:15px">' + mdBlock(stripEnunciado(a.q.statement)) + "</div>" +
-              '<div class="ans-line"><span class="tag tag-bad">Tu respuesta</span><span>' + (a.skipped ? "Sin responder" : esc(a.picked || "—")) + "</span></div>" +
+              '<div class="ans-line"><span class="tag tag-bad">Tu respuesta</span><span>' + (a.skipped ? "Sin responder" : esc(a.picked || "-")) + "</span></div>" +
               '<div class="ans-line"><span class="tag tag-ok">Correcta</span><span>' + answerHtml(a.q) + "</span></div>" +
             "</div></details>";
         }).join("") +
       "</section>"
     : "");
 
-  document.getElementById("again").onclick = beginAttempt;
+  document.getElementById("again").onclick = function(){ beginAttempt(); };
+  // falladas + sin responder; se vuelven a mezclar orden y alternativas
+  if (misses.length) document.getElementById("againMiss").onclick = function(){
+    beginAttempt(misses.map(function(a){ return a.q; }));
+  };
   document.getElementById("again2").onclick = function(){ renderSetup(); };
   window.scrollTo(0, 0);
 }
@@ -555,7 +581,7 @@ function answerHtml(q){
   }
   if (q.type === "selfgrade") return mdBlock(q.reveal);
   return q.options.filter(function(o){ return o.correct; }).map(function(o){
-    return '<strong class="mono">' + esc(o.key.toUpperCase()) + ".</strong> " +
+    return '<strong>' + esc(o.key.toUpperCase()) + ".</strong> " +
       (o.text ? mdInline(o.text) : "") + (o.lines.length ? mdBlock(o.lines) : "");
   }).join("<br>");
 }
