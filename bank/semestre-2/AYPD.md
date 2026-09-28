@@ -1647,3 +1647,1094 @@ public class Pizza {
 - b. Modificar cada estudiante para que controle todas las conexiones.
 - c. Reemplazar las operaciones del negocio por instrucciones SQL públicas.
 - ✅ d. Implementar otro DAO con el mismo contrato y acceso a PostgreSQL.
+
+## Pregunta 49
+
+**Enunciado:** ¿Cuál de las siguientes opciones describe un caso de uso común del patrón Builder?
+
+- ✅ a. Construir un menú de restaurante, agregando paso a paso los elementos que lo componen.
+- b. Generar un único punto de acceso a un recurso compartido.
+- c. Crear diferentes tipos de bases de datos según el sistema operativo.
+- d. Implementar un sistema de eventos distribuido.
+
+## Pregunta 50
+
+**Enunciado:** ¿Cuál de los siguientes es un caso típico para usar el patrón Abstract Factory?
+
+- a. Construir objetos complejos como autos, paso a paso.
+- ✅ b. Crear diferentes tipos de ventanas y botones para una interfaz gráfica sin especificar las clases concretas.
+- c. Facilitar el acceso a un objeto compartido entre múltiples instancias.
+- d. Garantizar que solo una instancia de una clase exista en el sistema.
+
+## Pregunta 51
+
+**Enunciado:** ¿Cuál es el propósito del patrón Builder?
+
+- a. Crear una familia de objetos relacionados mediante una fábrica abstracta.
+- ✅ b. Construir objetos complejos paso a paso, permitiendo su personalización.
+- c. Facilitar la creación de una única instancia de un objeto.
+- d. Proporcionar una interfaz única para todas las clases de un sistema.
+
+## Pregunta 52
+
+**Enunciado:** ¿Cuál es el propósito principal del patrón Abstract Factory?
+
+- ✅ a. Crear familias de objetos relacionados o dependientes sin especificar sus clases concretas.
+- b. Facilitar la creación de objetos mediante la clonación.
+- c. Crear objetos complejos a partir de componentes ya existentes.
+- d. Garantizar que una clase solo tenga una instancia.
+
+## Pregunta 53
+
+**Enunciado:** ¿Cuál es la característica principal del patrón Abstract Factory?
+
+- a. Permitir la creación de objetos complejos paso a paso.
+- ✅ b. Proveer una interfaz para crear familias de objetos relacionados o dependientes.
+- c. Facilitar la clonación de objetos sin conocer su clase concreta.
+- d. Garantizar que una clase tenga solo una instancia.
+
+## Pregunta 54
+
+**Enunciado:** ¿Cuál es la diferencia entre el patrón Builder y el patrón Factory Method?
+
+- a. Builder utiliza una instancia única, mientras que Factory Method crea múltiples instancias.
+- b. Factory Method es más adecuado para la creación de familias de objetos relacionados.
+- ✅ c. Builder crea objetos paso a paso, mientras que Factory Method se enfoca en la creación de un objeto específico sin especificar su clase concreta.
+- d. Factory Method es utilizado en la creación de objetos complejos, mientras que Builder solo trabaja con objetos simples.
+
+## Pregunta 55
+
+**Enunciado:** ¿Cuál es la principal diferencia entre el patrón Builder y el patrón Abstract Factory?
+
+- a. Builder requiere el uso de interfaces, mientras que Abstract Factory no.
+- b. Abstract Factory crea una sola instancia de un objeto, mientras que Builder genera múltiples instancias.
+- c. Abstract Factory se enfoca en la construcción de objetos complejos, mientras que Builder solo genera objetos simples.
+- ✅ d. Builder se usa para construir objetos paso a paso, mientras que Abstract Factory crea familias de objetos relacionados.
+
+## Pregunta 56
+
+**Enunciado:** ¿Cuál es la principal diferencia entre los patrones Abstract Factory y Builder?
+
+- a. Abstract Factory solo funciona con objetos simples, mientras que Builder trabaja con objetos complejos.
+- b. Builder garantiza una única instancia de un objeto, mientras que Abstract Factory permite la creación de múltiples instancias.
+- ✅ c. Abstract Factory crea familias de objetos relacionados, mientras que Builder construye objetos complejos paso a paso.
+- d. Builder se utiliza en sistemas multihilo, mientras que Abstract Factory no.
+
+## Pregunta 57
+
+**Enunciado:** ¿Cuál es un caso práctico de uso del patrón Builder?
+
+- a. Generar una interfaz gráfica que se ajuste a múltiples plataformas.
+- ✅ b. Construir un objeto como una casa, con diferentes partes como puertas, ventanas y techos, de manera personalizada.
+- c. Crear un solo objeto que será compartido por múltiples sistemas.
+- d. Crear diferentes tipos de productos en una fábrica sin conocer sus clases concretas.
+
+## Pregunta 58
+
+**Enunciado:** ¿Cuál es un ejemplo típico del uso del patrón Abstract Factory?
+
+- a. Construir una casa con múltiples configuraciones.
+- ✅ b. Crear diferentes tipos de formularios para diferentes sistemas operativos.
+- c. Crear un único objeto compartido entre todas las instancias de un sistema.
+- d. Administrar el acceso a una base de datos en sistemas distribuidos.
+
+## Pregunta 59
+
+**Enunciado:** ¿Cuál es una de las ventajas del patrón Abstract Factory?
+
+- a. Simplifica la creación de objetos en entornos multihilo.
+- b. Permite crear una única instancia de una clase en todo el sistema.
+- c. Reduce el tiempo de ejecución de los programas.
+- ✅ d. Permite intercambiar fácilmente familias de productos relacionadas sin cambiar el código cliente.
+
+## Pregunta 60
+
+**Enunciado:** ¿Cuál es una ventaja clave del patrón Abstract Factory?
+
+- a. Facilita la herencia múltiple entre las clases creadas.
+- b. Simplifica la creación de objetos únicos en todo el sistema.
+- ✅ c. Permite cambiar las familias de productos que se crean sin modificar el código cliente.
+- d. Elimina la necesidad de sincronización en entornos concurrentes.
+
+## Pregunta 61
+
+**Enunciado:** ¿Cuál es una ventaja clave del patrón Builder?
+
+- a. Elimina la necesidad de crear objetos en varias etapas.
+- b. Simplifica la creación de familias de objetos dependientes.
+- c. Facilita la clonación de objetos en sistemas distribuidos.
+- ✅ d. Se puede construir un objeto complejo sin necesidad de que el cliente conozca los detalles de su construcción.
+
+## Pregunta 62
+
+**Enunciado:** ¿Cuál es una ventaja del patrón Builder?
+
+- a. Facilita la creación de familias de objetos relacionados.
+- b. Facilita la clonación de objetos en entornos distribuidos.
+- c. Garantiza que solo una instancia del objeto sea creada.
+- ✅ d. Permite variar la representación interna del objeto mientras se construye.
+
+## Pregunta 63
+
+**Enunciado:** ¿Cuándo es preferible usar el patrón Builder sobre otros patrones de creación?
+
+- ✅ a. Cuando se necesita construir un objeto con muchas configuraciones y representaciones diferentes.
+- b. Cuando se requiere compartir una instancia única entre varios módulos de un sistema.
+- c. Cuando se quiere evitar la creación de múltiples instancias de una misma clase.
+- d. Cuando se trabaja con objetos que dependen de otras clases.
+
+## Pregunta 64
+
+**Enunciado:** ¿Cuándo es recomendable utilizar el patrón Abstract Factory?
+
+- ✅ a. Cuando se necesitan crear familias de objetos relacionados sin especificar las clases concretas.
+- b. Cuando se desea optimizar la memoria en sistemas de bajo rendimiento.
+- c. Cuando se desea construir objetos complejos de manera incremental.
+- d. Cuando se requiere compartir una instancia única entre diferentes módulos.
+
+## Pregunta 65
+
+**Enunciado:** ¿Qué diferencia principal existe entre el patrón Abstract Factory y el patrón Factory Method?
+
+- a. Factory Method crea objetos complejos paso a paso, mientras que Abstract Factory los crea directamente.
+- b. Abstract Factory usa métodos estáticos para crear objetos, mientras que Factory Method no.
+- ✅ c. Factory Method se usa para crear un solo producto, mientras que Abstract Factory crea familias de productos relacionados.
+- d. Abstract Factory crea una sola instancia de un objeto, mientras que Factory Method crea múltiples.
+
+## Pregunta 66
+
+**Enunciado:** ¿Qué problema resuelve el patrón Builder?
+
+- a. La creación de una única instancia de un objeto a lo largo de todo el sistema.
+- b. La eliminación de dependencias entre las clases concretas y el código cliente.
+- ✅ c. La creación de objetos complejos, permitiendo su construcción paso a paso.
+- d. La implementación de un sistema de concurrencia seguro.
+
+## Pregunta 67
+
+**Enunciado:** ¿Qué se debe hacer para agregar una nueva familia de productos en un sistema basado en Abstract Factory?
+
+- a. Modificar todas las clases concretas existentes.
+- ✅ b. Implementar una nueva fábrica concreta que genere los nuevos productos.
+- c. Reemplazar la fábrica abstracta por una nueva.
+- d. Cambiar la lógica de todas las subclases de la fábrica.
+
+## Pregunta 68
+
+**Enunciado:** ¿Qué ventaja proporciona el patrón Builder sobre otros patrones de creación?
+
+- a. Elimina la necesidad de herencia para la creación de objetos.
+- b. Garantiza que solo exista una instancia de cada objeto creado.
+- ✅ c. Permite la creación de objetos con múltiples configuraciones y representaciones complejas.
+- d. Facilita la creación de objetos sin necesidad de sincronización en entornos concurrentes.
+
+## Pregunta 69
+
+**Tipo:** CodeRunner (Java)
+
+**Enunciado:** Completa el código proporcionado para implementar el patrón **Prototype** en Java.
+
+La aplicación trabaja con vehículos que pueden utilizarse como prototipos. A partir de un vehículo existente se debe poder crear un nuevo objeto con las mismas características.
+
+- `VehiculoClonable`: define la operación `clonar()` que deben implementar los vehículos.
+- `Auto` y `Motocicleta`: representan los objetos que pueden ser clonados.
+- `VehiculoCache`: almacena los vehículos originales y permite solicitar una copia de ellos.
+
+**Requisitos**
+
+- Completa las instrucciones faltantes en los métodos `clonar()`.
+- El objeto clonado debe conservar las características del vehículo original.
+- `obtenerVehiculo()` debe devolver un nuevo objeto obtenido a partir del vehículo almacenado.
+- El objeto original y su clon deben ser objetos diferentes.
+
+> **Pista:** clonar no significa devolver el mismo objeto. Debes crear uno nuevo utilizando los datos que ya posee el objeto original.
+
+### Código base
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+interface VehiculoClonable {
+
+    VehiculoClonable clonar();
+
+    void mostrar();
+}
+
+
+// ----- Auto -----
+
+class Auto implements VehiculoClonable {
+
+    private String marca;
+
+    public Auto(String marca) {
+        this.marca = marca;
+    }
+
+    @Override
+    public VehiculoClonable clonar() {
+
+        // Crear y devolver un nuevo Auto
+        // utilizando la misma marca
+
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Auto - Marca: " + marca);
+    }
+}
+
+
+// ----- Motocicleta -----
+
+class Motocicleta implements VehiculoClonable {
+
+    private String marca;
+
+    public Motocicleta(String marca) {
+        this.marca = marca;
+    }
+
+    @Override
+    public VehiculoClonable clonar() {
+
+        // Crear y devolver una nueva Motocicleta
+        // utilizando la misma marca
+
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Motocicleta - Marca: " + marca);
+    }
+}
+
+
+// Almacena los objetos que se utilizarán como prototipos
+class VehiculoCache {
+
+    private static Map<String, VehiculoClonable> mapaVehiculos = new HashMap<>();
+
+    public static void cargarCache() {
+        mapaVehiculos.put("auto", new Auto("Toyota"));
+        mapaVehiculos.put("motocicleta", new Motocicleta("Honda"));
+    }
+
+    public static VehiculoClonable obtenerVehiculo(String tipoVehiculo) {
+        VehiculoClonable vehiculo = mapaVehiculos.get(tipoVehiculo);
+
+        // Devuelve una copia del vehículo almacenado
+        return vehiculo.clonar();
+    }
+}
+```
+
+### Prueba
+
+```java
+VehiculoCache.cargarCache();
+
+VehiculoClonable vehiculo1 = VehiculoCache.obtenerVehiculo("auto");
+vehiculo1.mostrar();
+
+VehiculoClonable vehiculo2 = VehiculoCache.obtenerVehiculo("motocicleta");
+vehiculo2.mostrar();
+```
+
+```
+Auto - Marca: Toyota
+Motocicleta - Marca: Honda
+```
+
+### Prueba
+
+```java
+VehiculoCache.cargarCache();
+
+VehiculoClonable auto1 = VehiculoCache.obtenerVehiculo("auto");
+VehiculoClonable auto2 = VehiculoCache.obtenerVehiculo("auto");
+System.out.println(auto1 != auto2);
+
+VehiculoClonable moto1 = VehiculoCache.obtenerVehiculo("motocicleta");
+VehiculoClonable moto2 = VehiculoCache.obtenerVehiculo("motocicleta");
+System.out.println(moto1 != moto2);
+```
+
+```
+true
+true
+```
+
+### Prueba
+
+```java
+VehiculoClonable auto = new Auto("Fiat");
+VehiculoClonable moto = new Motocicleta("Yamaha");
+auto.clonar().mostrar();
+moto.clonar().mostrar();
+```
+
+```
+Auto - Marca: Fiat
+Motocicleta - Marca: Yamaha
+```
+
+### Solución
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+interface VehiculoClonable {
+
+    VehiculoClonable clonar();
+
+    void mostrar();
+}
+
+
+// ----- Auto -----
+
+class Auto implements VehiculoClonable {
+
+    private String marca;
+
+    public Auto(String marca) {
+        this.marca = marca;
+    }
+
+    @Override
+    public VehiculoClonable clonar() {
+        return new Auto(this.marca);
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Auto - Marca: " + marca);
+    }
+}
+
+
+// ----- Motocicleta -----
+
+class Motocicleta implements VehiculoClonable {
+
+    private String marca;
+
+    public Motocicleta(String marca) {
+        this.marca = marca;
+    }
+
+    @Override
+    public VehiculoClonable clonar() {
+        return new Motocicleta(this.marca);
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Motocicleta - Marca: " + marca);
+    }
+}
+
+
+// Almacena los objetos que se utilizarán como prototipos
+class VehiculoCache {
+
+    private static Map<String, VehiculoClonable> mapaVehiculos = new HashMap<>();
+
+    public static void cargarCache() {
+        mapaVehiculos.put("auto", new Auto("Toyota"));
+        mapaVehiculos.put("motocicleta", new Motocicleta("Honda"));
+    }
+
+    public static VehiculoClonable obtenerVehiculo(String tipoVehiculo) {
+        VehiculoClonable vehiculo = mapaVehiculos.get(tipoVehiculo);
+
+        // Devuelve una copia del vehículo almacenado
+        return vehiculo.clonar();
+    }
+}
+```
+
+## Pregunta 70
+
+**Tipo:** CodeRunner (Java)
+
+**Enunciado:** Completa el código proporcionado para implementar el patrón **Prototype** en Java.
+
+La aplicación trabaja con `Auto` y `Camioneta`, que pueden utilizarse como prototipos. Cada vehículo posee una marca y un color, y debe ser posible crear nuevos objetos copiando estas características.
+
+- `VehiculoClonable`: define la operación `clonar()`.
+- `Auto` y `Camioneta`: representan los vehículos que pueden ser clonados.
+- `VehiculoCache`: almacena los vehículos originales y permite solicitar copias de ellos.
+
+**Requisitos**
+
+- Completa las instrucciones faltantes en los métodos `clonar()`.
+- El clon debe conservar la marca y el color del vehículo original.
+- El clon debe ser un objeto diferente al original.
+- Los vehículos deben permitir modificar posteriormente su marca y color.
+
+> **Pista:** crear un objeto nuevo no es suficiente. Antes de devolverlo, asegúrate de copiar en él las características del objeto original.
+
+### Código base
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+interface VehiculoClonable {
+
+    VehiculoClonable clonar();
+
+    void mostrar();
+}
+
+
+// ----- Auto -----
+
+class Auto implements VehiculoClonable {
+
+    private String marca;
+    private String color;
+
+    @Override
+    public VehiculoClonable clonar() {
+
+        // Crear un nuevo Auto
+
+        // Copiar la marca y el color del objeto original
+
+        // Devolver el clon
+
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Auto: " + marca + ", Color: " + color);
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+}
+
+
+// ----- Camioneta -----
+
+class Camioneta implements VehiculoClonable {
+
+    private String marca;
+    private String color;
+
+    @Override
+    public VehiculoClonable clonar() {
+
+        // Crear una nueva Camioneta
+
+        // Copiar la marca y el color del objeto original
+
+        // Devolver el clon
+
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Camioneta: " + marca + ", Color: " + color);
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+}
+
+
+// Almacena los objetos que se utilizarán como prototipos
+class VehiculoCache {
+
+    private static Map<String, VehiculoClonable> mapaVehiculos = new HashMap<>();
+
+    public static void cargarCache() {
+
+        Auto auto = new Auto();
+        auto.setMarca("Toyota");
+        auto.setColor("Rojo");
+        mapaVehiculos.put("auto", auto);
+
+        Camioneta camioneta = new Camioneta();
+        camioneta.setMarca("Ford");
+        camioneta.setColor("Azul");
+        mapaVehiculos.put("camioneta", camioneta);
+    }
+
+    public static VehiculoClonable obtenerVehiculo(String tipoVehiculo) {
+
+        VehiculoClonable vehiculo = mapaVehiculos.get(tipoVehiculo);
+
+        // Devolver un clon del vehículo encontrado
+        return vehiculo.clonar();
+    }
+}
+```
+
+### Prueba
+
+```java
+VehiculoCache.cargarCache();
+
+Auto auto1 = (Auto) VehiculoCache.obtenerVehiculo("auto");
+Auto auto2 = (Auto) VehiculoCache.obtenerVehiculo("auto");
+
+auto2.setColor("Negro");
+
+auto1.mostrar();
+auto2.mostrar();
+```
+
+```
+Auto: Toyota, Color: Rojo
+Auto: Toyota, Color: Negro
+```
+
+### Prueba
+
+```java
+VehiculoCache.cargarCache();
+
+Camioneta camioneta1 = (Camioneta) VehiculoCache.obtenerVehiculo("camioneta");
+Camioneta camioneta2 = (Camioneta) VehiculoCache.obtenerVehiculo("camioneta");
+
+camioneta2.setColor("Blanco");
+
+camioneta1.mostrar();
+camioneta2.mostrar();
+```
+
+```
+Camioneta: Ford, Color: Azul
+Camioneta: Ford, Color: Blanco
+```
+
+### Solución
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+interface VehiculoClonable {
+
+    VehiculoClonable clonar();
+
+    void mostrar();
+}
+
+
+// ----- Auto -----
+
+class Auto implements VehiculoClonable {
+
+    private String marca;
+    private String color;
+
+    @Override
+    public VehiculoClonable clonar() {
+        Auto clon = new Auto();
+        clon.setMarca(this.marca);
+        clon.setColor(this.color);
+        return clon;
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Auto: " + marca + ", Color: " + color);
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+}
+
+
+// ----- Camioneta -----
+
+class Camioneta implements VehiculoClonable {
+
+    private String marca;
+    private String color;
+
+    @Override
+    public VehiculoClonable clonar() {
+        Camioneta clon = new Camioneta();
+        clon.setMarca(this.marca);
+        clon.setColor(this.color);
+        return clon;
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Camioneta: " + marca + ", Color: " + color);
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+}
+
+
+// Almacena los objetos que se utilizarán como prototipos
+class VehiculoCache {
+
+    private static Map<String, VehiculoClonable> mapaVehiculos = new HashMap<>();
+
+    public static void cargarCache() {
+
+        Auto auto = new Auto();
+        auto.setMarca("Toyota");
+        auto.setColor("Rojo");
+        mapaVehiculos.put("auto", auto);
+
+        Camioneta camioneta = new Camioneta();
+        camioneta.setMarca("Ford");
+        camioneta.setColor("Azul");
+        mapaVehiculos.put("camioneta", camioneta);
+    }
+
+    public static VehiculoClonable obtenerVehiculo(String tipoVehiculo) {
+
+        VehiculoClonable vehiculo = mapaVehiculos.get(tipoVehiculo);
+
+        // Devolver un clon del vehículo encontrado
+        return vehiculo.clonar();
+    }
+}
+```
+
+## Pregunta 71
+
+**Tipo:** CodeRunner (Java)
+
+**Enunciado:** Completa el código proporcionado para implementar el patrón **Prototype** en Java.
+
+La aplicación trabaja con dos tipos de productos: `ProductoA` y `ProductoB`. Cada producto posee un nombre y debe poder crear una copia de sí mismo conservando ese valor.
+
+- `ProductoClonable`: define la operación `clonar()`.
+- `ProductoA` y `ProductoB`: representan los productos que pueden ser clonados.
+- `ProductoCache`: almacena productos originales y permite obtener copias de ellos.
+
+**Requisitos**
+
+- Completa las instrucciones faltantes en los métodos `clonar()`.
+- Cada clon debe conservar el nombre del producto original.
+- El clon debe ser un objeto diferente al original.
+- `obtenerProducto()` debe devolver un clon del producto almacenado.
+
+> **Pista:** utiliza los datos del objeto actual para crear y devolver un nuevo producto con las mismas características.
+
+### Código base
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+interface ProductoClonable {
+
+    ProductoClonable clonar();
+
+    void mostrar();
+}
+
+
+// ----- Producto A -----
+
+class ProductoA implements ProductoClonable {
+
+    private String nombre;
+
+    public ProductoA(String nombre) {
+        this.nombre = nombre;
+    }
+
+    @Override
+    public ProductoClonable clonar() {
+
+        // Crear y devolver un nuevo ProductoA
+        // conservando el nombre del producto original
+
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Producto A: " + nombre);
+    }
+}
+
+
+// ----- Producto B -----
+
+class ProductoB implements ProductoClonable {
+
+    private String nombre;
+
+    public ProductoB(String nombre) {
+        this.nombre = nombre;
+    }
+
+    @Override
+    public ProductoClonable clonar() {
+
+        // Crear y devolver un nuevo ProductoB
+        // conservando el nombre del producto original
+
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Producto B: " + nombre);
+    }
+}
+
+
+// Almacena los productos que se utilizarán como prototipos
+class ProductoCache {
+
+    private static Map<String, ProductoClonable> mapaProductos = new HashMap<>();
+
+    public static void cargarCache() {
+        mapaProductos.put("productoA", new ProductoA("Producto Básico"));
+        mapaProductos.put("productoB", new ProductoB("Producto Premium"));
+    }
+
+    public static ProductoClonable obtenerProducto(String tipoProducto) {
+
+        ProductoClonable producto = mapaProductos.get(tipoProducto);
+
+        // Devuelve una copia del producto almacenado
+        return producto.clonar();
+    }
+}
+```
+
+### Prueba
+
+```java
+ProductoCache.cargarCache();
+ProductoClonable producto1 = ProductoCache.obtenerProducto("productoA");
+producto1.mostrar();
+ProductoClonable producto2 = ProductoCache.obtenerProducto("productoB");
+producto2.mostrar();
+```
+
+```
+Producto A: Producto Básico
+Producto B: Producto Premium
+```
+
+### Prueba
+
+```java
+ProductoCache.cargarCache();
+
+ProductoClonable a1 = ProductoCache.obtenerProducto("productoA");
+ProductoClonable a2 = ProductoCache.obtenerProducto("productoA");
+System.out.println(a1 != a2);
+
+ProductoClonable b1 = ProductoCache.obtenerProducto("productoB");
+ProductoClonable b2 = ProductoCache.obtenerProducto("productoB");
+System.out.println(b1 != b2);
+```
+
+```
+true
+true
+```
+
+### Prueba
+
+```java
+ProductoClonable a = new ProductoA("Oferta");
+ProductoClonable b = new ProductoB("Edición Limitada");
+a.clonar().mostrar();
+b.clonar().mostrar();
+```
+
+```
+Producto A: Oferta
+Producto B: Edición Limitada
+```
+
+### Solución
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+interface ProductoClonable {
+
+    ProductoClonable clonar();
+
+    void mostrar();
+}
+
+
+// ----- Producto A -----
+
+class ProductoA implements ProductoClonable {
+
+    private String nombre;
+
+    public ProductoA(String nombre) {
+        this.nombre = nombre;
+    }
+
+    @Override
+    public ProductoClonable clonar() {
+        return new ProductoA(this.nombre);
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Producto A: " + nombre);
+    }
+}
+
+
+// ----- Producto B -----
+
+class ProductoB implements ProductoClonable {
+
+    private String nombre;
+
+    public ProductoB(String nombre) {
+        this.nombre = nombre;
+    }
+
+    @Override
+    public ProductoClonable clonar() {
+        return new ProductoB(this.nombre);
+    }
+
+    @Override
+    public void mostrar() {
+        System.out.println("Producto B: " + nombre);
+    }
+}
+
+
+// Almacena los productos que se utilizarán como prototipos
+class ProductoCache {
+
+    private static Map<String, ProductoClonable> mapaProductos = new HashMap<>();
+
+    public static void cargarCache() {
+        mapaProductos.put("productoA", new ProductoA("Producto Básico"));
+        mapaProductos.put("productoB", new ProductoB("Producto Premium"));
+    }
+
+    public static ProductoClonable obtenerProducto(String tipoProducto) {
+
+        ProductoClonable producto = mapaProductos.get(tipoProducto);
+
+        // Devuelve una copia del producto almacenado
+        return producto.clonar();
+    }
+}
+```
+
+## Pregunta 72
+
+**Enunciado:** ¿Cuál es el propósito principal del patrón Prototype?
+
+- a. Facilitar la creación de familias de objetos relacionados.
+- b. Crear nuevos objetos a partir de una clase base abstracta.
+- c. Garantizar que una clase solo tenga una única instancia.
+- ✅ d. Crear nuevos objetos copiando instancias existentes en lugar de construirlas desde cero.
+
+## Pregunta 73
+
+**Enunciado:** ¿Cuál es la diferencia clave entre el patrón Prototype y otros patrones de creación?
+
+- a. Prototype es un patrón estructural, mientras que otros son patrones creacionales.
+- b. Prototype solo se aplica a objetos simples, mientras que otros patrones se aplican a objetos complejos.
+- c. Prototype crea una única instancia, mientras que otros patrones permiten múltiples instancias.
+- ✅ d. Prototype se basa en la clonación de objetos, mientras que otros patrones crean nuevas instancias desde cero.
+
+## Pregunta 74
+
+**Enunciado:** ¿Cuál es la diferencia entre clonación superficial y clonación profunda en el patrón Prototype?
+
+- a. La clonación profunda copia solo las propiedades públicas del objeto, mientras que la clonación superficial copia todas las propiedades.
+- b. La clonación superficial es más lenta que la clonación profunda debido al uso de memoria.
+- ✅ c. La clonación superficial copia las referencias de los objetos, mientras que la clonación profunda duplica los objetos referenciados.
+- d. La clonación superficial crea un nuevo objeto desde cero, mientras que la clonación profunda solo reutiliza el objeto existente.
+
+## Pregunta 75
+
+**Enunciado:** ¿Cuál es la principal característica del patrón Prototype?
+
+- a. Permite crear nuevas clases sin necesidad de especificar el tipo de objeto.
+- ✅ b. Facilita la clonación de objetos existentes en lugar de instanciarlos desde cero.
+- c. Proporciona una única instancia compartida entre todas las clases.
+- d. Permite crear objetos complejos paso a paso.
+
+## Pregunta 76
+
+**Enunciado:** ¿Cuál es un caso típico donde se puede aplicar el patrón Prototype?
+
+- a. Cuando se necesita gestionar la creación de diferentes familias de objetos.
+- ✅ b. Cuando se necesita crear un gran número de objetos similares y no es eficiente construir cada uno desde cero.
+- c. Cuando los objetos son muy simples y no requieren un proceso de clonación.
+- d. Cuando se debe crear una única instancia compartida en un sistema distribuido.
+
+## Pregunta 77
+
+**Enunciado:** ¿Cuál es un ejemplo práctico del uso del patrón Prototype?
+
+- a. Construir un sistema que maneje múltiples tipos de productos con diferentes configuraciones.
+- b. Crear una interfaz gráfica que funcione en diferentes plataformas sin cambiar el código subyacente.
+- ✅ c. Crear un documento que se utiliza como base para generar múltiples copias con ligeras modificaciones.
+- d. Crear una conexión única a una base de datos para compartir entre varios usuarios.
+
+## Pregunta 78
+
+**Enunciado:** ¿Cuál es una implementación típica del patrón Prototype?
+
+- a. Utilizar un singleton para almacenar una instancia única del prototipo.
+- b. Implementar una fábrica abstracta para crear familias de objetos clonados.
+- c. Utilizar constructores estáticos para crear nuevas instancias.
+- ✅ d. Definir un método `clone()` en una clase base que permita copiar las instancias de la clase.
+
+## Pregunta 79
+
+**Enunciado:** ¿Cuál es una limitación de la clonación superficial?
+
+- a. No puede clonar atributos primitivos del objeto original.
+- ✅ b. Los objetos referenciados no se duplican, por lo que los cambios en ellos afectan al objeto original.
+- c. Solo puede duplicar objetos si estos no tienen referencias a otros objetos.
+- d. Requiere demasiado tiempo para ejecutarse en sistemas grandes.
+
+## Pregunta 80
+
+**Enunciado:** ¿Cuál es una limitación de la clonación superficial en el patrón Prototype?
+
+- ✅ a. Los cambios realizados en los objetos referenciados en la copia afectan también al objeto original.
+- b. Requiere que el objeto clonado implemente una interfaz de fábrica.
+- c. No permite copiar atributos primitivos del objeto original.
+- d. Es más lenta que la clonación profunda debido al uso de mayor cantidad de memoria.
+
+## Pregunta 81
+
+**Enunciado:** ¿Cuál es una situación en la que es recomendable usar el patrón Prototype?
+
+- a. Cuando se requiere acceso simultáneo a una única instancia desde varios hilos.
+- ✅ b. Cuando la creación de objetos es costosa en términos de tiempo o recursos.
+- c. Cuando solo se necesita una instancia de una clase en todo el sistema.
+- d. Cuando los objetos deben ser creados y destruidos rápidamente.
+
+## Pregunta 82
+
+**Enunciado:** ¿Cuál es una técnica común para implementar clonación profunda en el patrón Prototype?
+
+- a. Implementar el patrón Singleton en lugar de Prototype.
+- b. Usar constructores estáticos para duplicar las referencias de los objetos.
+- c. Definir una fábrica que controle la clonación de objetos.
+- ✅ d. Implementar el método `clone()` que copia tanto los atributos primitivos como los objetos referenciados.
+
+## Pregunta 83
+
+**Enunciado:** ¿Cuál es una ventaja clave del patrón Prototype?
+
+- a. Proporciona una única instancia de una clase en todo el sistema.
+- b. Permite la creación de objetos complejos paso a paso.
+- c. Simplifica la sincronización en entornos multihilo.
+- ✅ d. Facilita la creación de objetos mediante clonación sin conocer las clases exactas.
+
+## Pregunta 84
+
+**Enunciado:** ¿Cuál es una ventaja de usar clonación profunda (deep copy) en el patrón Prototype?
+
+- ✅ a. Asegura que las modificaciones en el objeto clonado no afecten al objeto original.
+- b. Permite copiar objetos primitivos sin duplicar las referencias.
+- c. Hace más eficiente el uso de memoria en entornos concurrentes.
+- d. Mejora el rendimiento al evitar la creación de nuevas instancias.
+
+## Pregunta 85
+
+**Enunciado:** ¿Cuándo es recomendable utilizar clonación profunda en lugar de clonación superficial en el patrón Prototype?
+
+- ✅ a. Cuando el objeto contiene referencias a otros objetos y se quiere duplicar completamente toda la estructura.
+- b. Cuando se necesita una copia rápida del objeto para mejorar el rendimiento.
+- c. Cuando se busca crear una copia temporal del objeto.
+- d. Cuando el objeto no tiene referencias a otros objetos.
+
+## Pregunta 86
+
+**Enunciado:** ¿Por qué es útil el patrón Prototype en sistemas que manejan objetos grandes o costosos de crear?
+
+- ✅ a. Permite la creación de objetos mediante la clonación, lo que es más eficiente que instanciarlos desde cero.
+- b. Reduce el uso de memoria al compartir referencias entre los objetos originales y clonados.
+- c. Garantiza que los objetos clonados sean únicos en todo el sistema.
+- d. Facilita la implementación de objetos complejos sin necesidad de instancias adicionales.
+
+## Pregunta 87
+
+**Enunciado:** ¿Qué debe hacer un objeto para ser clonado en el patrón Prototype?
+
+- a. Definir un constructor estático que cree nuevas instancias del objeto.
+- b. Usar el patrón Singleton para compartir la instancia.
+- ✅ c. Implementar una interfaz o método que permita la clonación, como `clone()`.
+- d. Almacenar una única referencia a sí mismo para ser clonada.
+
+## Pregunta 88
+
+**Enunciado:** ¿Qué significa clonación superficial (shallow copy) en el contexto del patrón Prototype?
+
+- a. Crear una nueva instancia del objeto sin ningún dato de la instancia original.
+- b. Crear una copia exacta del objeto, incluyendo todos los objetos referenciados.
+- c. Crear una copia del objeto original con todos los valores duplicados en profundidad.
+- ✅ d. Copiar únicamente las referencias de los objetos contenidos, sin duplicar los objetos referenciados.
+
+## Pregunta 89
+
+**Enunciado:** ¿Qué tipo de clonación realiza la clonación superficial (shallow copy)?
+
+- a. Duplica todos los objetos referenciados junto con el objeto original.
+- b. No copia nada, solo hace referencia al objeto original.
+- c. Crea nuevas instancias de los objetos referenciados y las reemplaza en el objeto clonado.
+- ✅ d. Copia las referencias de los objetos, pero no los objetos en sí.
+
+## Pregunta 90
+
+**Enunciado:** ¿Qué tipo de copia realiza la clonación profunda en el patrón Prototype?
+
+- a. Solo copia las referencias de los objetos, sin duplicar los atributos primitivos.
+- ✅ b. Copia todos los atributos primitivos y objetos referenciados del objeto original, creando nuevas instancias de los objetos referenciados.
+- c. Reutiliza el objeto original sin copiar ninguna de sus propiedades.
+- d. Copia solo los atributos primitivos del objeto y reutiliza los objetos referenciados.
+
+## Pregunta 91
+
+**Enunciado:** ¿Qué ventaja proporciona el patrón Prototype sobre otros patrones de creación como Factory Method?
+
+- a. Garantiza que solo se cree una única instancia del objeto.
+- b. Permite la construcción de objetos complejos paso a paso.
+- c. Facilita la creación de objetos relacionados o dependientes sin especificar sus clases.
+- ✅ d. Permite la creación rápida de objetos mediante la clonación de instancias ya existentes.
