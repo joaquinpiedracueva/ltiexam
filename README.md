@@ -47,7 +47,7 @@ Publicar es hacer push a `main`: GitHub Pages sirve la raíz del repo. Pages cac
 ## Formato del banco
 
 - `# Título`: el primer H1 es el nombre de la materia.
-- `## Pregunta N`: empieza una pregunta. El número se toma del encabezado y debe ser único en el archivo. Las preguntas nuevas van al final con el siguiente número libre; no hace falta agruparlas por tipo, porque el examen las sortea.
+- `## Pregunta N`: empieza una pregunta. El número se toma del encabezado y debe ser único en el archivo. Nunca se repite una pregunta: antes de agregar una, comprobar que no esté ya en el banco. Las preguntas nuevas van al final con el siguiente número libre; no hace falta agruparlas por tipo, porque el examen las sortea.
 - `**Enunciado:**`: primera línea del enunciado (el rótulo no se muestra). El enunciado puede seguir en varios párrafos, listas, `> citas` y bloques de código.
 - `✅` marca lo correcto.
 - Por convención, las subsecciones del enunciado van en negrita (`**Requisitos**`), no como `###`: en las CodeRunner, `###` queda reservado para las secciones del código.
@@ -184,4 +184,4 @@ cd vendor/java/runner && javac --release 8 -d build CodeRunner.java && jar cf ..
 node tools/check-bank.js bank/semestre-2/AYPD.md
 ```
 
-Parsea el banco con `js/parser.js` y avisa de números repetidos, opciones únicas sin ✅ y emparejamientos sin exactamente una ✅ por término. En las CodeRunner con `### Solución`, compila la solución con cada prueba en el JDK local y compara la salida con la esperada. El JDK local puede ser más nuevo que Java 8, así que no detecta sintaxis moderna. Hay que correrlo después de agregar o editar preguntas.
+Parsea el banco con `js/parser.js` y avisa de números repetidos, preguntas repetidas (mismo enunciado y mismas alternativas, sin importar orden, letras, mayúsculas, tildes ni puntuación; en las CodeRunner, mismo código base), opciones únicas sin ✅ y emparejamientos sin exactamente una ✅ por término. En las CodeRunner con `### Solución`, compila la solución con cada prueba en el JDK local y compara la salida con la esperada. El JDK local puede ser más nuevo que Java 8, así que no detecta sintaxis moderna. Hay que correrlo después de agregar o editar preguntas.

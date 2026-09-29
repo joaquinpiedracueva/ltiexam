@@ -20,10 +20,25 @@ var problems = 0;
 function bad(q, msg){ problems++; console.log("✕ " + q.label + ": " + msg); }
 
 console.log(db.title + " — " + db.questions.length + " preguntas");
-var nums = {};
+// Clave para detectar preguntas repetidas: enunciado + alternativas (sin orden ni letras),
+// o el código base en las CodeRunner. Ignora mayúsculas, tildes, puntuación y espacios.
+function plain(s){ return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim(); }
+function dupKey(q){
+  if (q.type === "code") return "code|" + plain(q.template || q.statement.join(" "));
+  var opts = q.options.map(function(o){
+    return plain(o.text.split(OK_MARK).join("").replace(/^\s*[a-z][.)]\s+/i, "")) + "{" + o.children.map(function(c){ return plain(c.text); }).sort().join(",") + "}";
+  }).sort();
+  return plain(q.statement.join(" ").replace(/\*\*Enunciado:\*\*/, "")) + "|" + opts.join("|");
+}
+var OK_MARK = "✅";
+
+var nums = {}, keys = {};
 db.questions.forEach(function(q){
   if (nums[q.num]) bad(q, "número repetido");
   nums[q.num] = true;
+  var k = dupKey(q);
+  if (keys[k]) bad(q, "repite la " + keys[k]);
+  else keys[k] = q.label;
   if (q.type === "code") return checkCode(q);
   if (q.type === "match"){
     q.options.forEach(function(o){ if (o.children.filter(function(c){ return c.correct; }).length !== 1) bad(q, "«" + o.text + "» necesita exactamente una ✅"); });

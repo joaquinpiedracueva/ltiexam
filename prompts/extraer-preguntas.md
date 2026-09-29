@@ -161,3 +161,4 @@ Reglas de las CodeRunner:
 - Cada opción única o múltiple tiene al menos una ✅; cada término de emparejar tiene exactamente una.
 - Las CodeRunner tienen al menos una `### Prueba` con sus dos bloques, y la solución completa.
 - No hay `###` fuera de las CodeRunner, ni texto propio de Moodle.
+- No hay preguntas repetidas: si la página muestra dos veces la misma pregunta (aunque cambie el orden de las opciones), va una sola vez.
