@@ -164,6 +164,10 @@ function renderSetup(msg){
 
   app.innerHTML =
     '<section class="setup">' +
+      '<div class="setup-intro">' +
+        "<h1>¿Qué querés practicar?</h1>" +
+        "<p>Elegí el semestre y la materia. Las preguntas se sortean en cada intento.</p>" +
+      "</div>" +
       '<form class="picker" id="picker" novalidate>' +
         dropdownHtml("semDd", "Semestre", semItems, S.sem, "Seleccionar", false) +
         dropdownHtml("matDd", "Materia", matItems, S.mat, "Seleccionar", !hasSem) +
