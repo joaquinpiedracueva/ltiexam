@@ -53,9 +53,11 @@ function checkCode(q){
   var dir = fs.mkdtempSync(path.join(os.tmpdir(), "ltiexam-"));
   var m = q.solution.match(/public\s+(?:(?:abstract|final|static)\s+)*(?:class|interface|enum)\s+([A-Za-z_$][\w$]*)/);
   fs.writeFileSync(path.join(dir, (m ? m[1] : "Solucion") + ".java"), q.solution);
+  // como js/coderunner.js: la prueba lleva los import del código
+  var imports = (q.solution.match(/^\s*import\s+[\w.]+(?:\.\*)?\s*;/gm) || []).map(function(l){ return l.trim(); }).join("\n");
   q.tests.forEach(function(t, i){
     fs.writeFileSync(path.join(dir, "__Prueba" + i + ".java"),
-      "public class __Prueba" + i + " {\n    public static void main(String[] args) throws Exception {\n" + t.code + "\n    }\n}\n");
+      imports + "\npublic class __Prueba" + i + " {\n    public static void main(String[] args) throws Exception {\n" + t.code + "\n    }\n}\n");
   });
   try { cp.execSync("javac -encoding UTF-8 *.java", { cwd: dir, stdio: "pipe" }); }
   catch (e){ return bad(q, "la solución no compila con las pruebas\n" + e.stderr); }

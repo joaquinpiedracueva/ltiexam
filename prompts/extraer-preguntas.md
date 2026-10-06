@@ -144,6 +144,8 @@ public class Singleton {
 ```
 ````
 
+**Código base de las CodeRunner:** en la revisión, la caja muestra la respuesta enviada, no el código inicial. Antes de extraer, abrí el intento sin responder (o un intento nuevo) y recorré todas las preguntas, una por una, con «Siguiente página», guardando el contenido inicial de cada caja de respuesta antes de tocarla. Si la caja ya tiene texto, usá el botón «Restablecer respuesta» de CodeRunner (si está) para ver la plantilla. Si no pudiste ver el código inicial de alguna, reconstruilo desde la respuesta enviada dejando los huecos con el comentario original y ponela en "Para revisar".
+
 Reglas de las CodeRunner:
 
 - La línea `**Tipo:** CodeRunner (Java)` va antes del enunciado.
@@ -160,5 +162,6 @@ Reglas de las CodeRunner:
 - Cada pregunta tiene `## Pregunta N`, con números consecutivos desde NUMERO_INICIAL.
 - Cada opción única o múltiple tiene al menos una ✅; cada término de emparejar tiene exactamente una.
 - Las CodeRunner tienen al menos una `### Prueba` con sus dos bloques, y la solución completa.
+- El `### Código base` de cada CodeRunner es el código inicial del editor, no la respuesta enviada.
 - No hay `###` fuera de las CodeRunner, ni texto propio de Moodle.
 - No hay preguntas repetidas: si la página muestra dos veces la misma pregunta (aunque cambie el orden de las opciones), va una sola vez.
