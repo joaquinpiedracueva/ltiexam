@@ -15,6 +15,21 @@
           document.documentElement.dataset.theme = t;
       } catch (e) {}
     </script>
+    <!-- Google Analytics: solo en GitHub Pages, para no contar las pruebas en local -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      if (location.hostname === "joaquinpiedracueva.github.io") {
+        var ga = document.createElement("script");
+        ga.async = true;
+        ga.src = "https://www.googletagmanager.com/gtag/js?id=G-V9MSQSSBXR";
+        document.head.appendChild(ga);
+        gtag("js", new Date());
+        gtag("config", "G-V9MSQSSBXR");
+      }
+    </script>
   </head>
   <body>
     <div class="page">

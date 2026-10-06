@@ -32,6 +32,8 @@ python3 -m http.server 8000   # y abrir http://localhost:8000
 
 Publicar es hacer push a `main`: GitHub Pages sirve la raíz del repo. Pages cachea los archivos 10 minutos (`max-age=600`), así que un cambio puede tardar en verse sin recarga forzada.
 
+Las visitas se miden con Google Analytics (propiedad `G-V9MSQSSBXR`, en el `<head>` de `index.html`). El script solo se carga en `joaquinpiedracueva.github.io`, así que las pruebas en local no cuentan.
+
 ## Agregar una materia
 
 1. Crear `bank/semestre-N/SIGLA.md` con un título `# Nombre de la materia`.
