@@ -10,11 +10,12 @@ var CR = (function(){
   var LOADER = "https://cjrtnc.leaningtech.com/4.3/loader.js";
   var TIMEOUT_MS = 4000;     // por prueba, lo aplica el motor en Java
   var HANG_MS = 20000;       // margen del lado de la página: la compilación + todas las pruebas
+  var COLD_HANG_MS = 90000;  // la primera vez baja parte de tools.jar (18 MB) y calienta javac: 15-30 s o más
   var ready = null;
   var runs = 0;
-  var warm = false;
-  var queue = Promise.resolve(); // una comprobación por vez: todas comparten la JVM y la salida #console          // ya corrió una comprobación: las siguientes tardan ~1 s
-  var stuck = false;         // un bucle sin pausas bloquea la JVM de CheerpJ hasta recargar
+  var warm = false;          // ya corrió una comprobación: las siguientes tardan ~1 s
+  var queue = Promise.resolve(); // una comprobación por vez: todas comparten la JVM y la salida #console
+  var stuck = false;         // la comprobación anterior sigue corriendo: no se puede lanzar otra
 
   function appPath(rel){ return "/app" + decodeURIComponent(new URL(rel, location.href).pathname); }
 
@@ -125,7 +126,12 @@ var CR = (function(){
   function guardLoops(src){
     var out = "", i = 0;
     function ws(k){ while (k < src.length && /\s/.test(src[k])) k++; return k; }
-    function guardCond(c){ return /^\s*(true)?\s*$/.test(c) ? c : " __G.t() && (" + c + ")"; }
+    function constTrue(c){ return /^\s*(true)?\s*$/.test(c); }
+    function guardCond(c){ return constTrue(c) ? c : " __G.t() && (" + c + ")"; }
+    // un cuerpo sin llaves con condición constante (while (true) x++;) no se puede tocar en la
+    // condición sin cambiar qué es alcanzable: se le antepone un if con su else, que no roba
+    // el else de un if de afuera
+    var PREFIX = " if (!__G.t()) ; else ";
     while (i < src.length){
       var j = skipToken(src, i);
       if (j !== i){ out += src.slice(i, j); i = j; continue; }
@@ -133,16 +139,18 @@ var CR = (function(){
       if (!m){ out += src[i++]; continue; }
       var w = m[0], k = ws(i + w.length);
       if (w === "do" && src[k] === "{"){ out += src.slice(i, k + 1) + " __G.t();"; i = k + 1; continue; }
+      if (w === "do" && src[k] !== ";"){ out += w + PREFIX; i += w.length; continue; }
       if ((w === "while" || w === "for") && src[k] === "("){
         var close = closeParen(src, k);
         if (close > 0){
           var head = src.slice(k + 1, close), body = ws(close + 1);
           // con llaves va adentro del cuerpo: así no cambia qué código es alcanzable (while (true) {...})
           if (src[body] === "{"){ out += src.slice(i, body + 1) + " __G.t();"; i = body + 1; continue; }
-          var parts = splitTop(head);
-          if (w === "while") head = guardCond(head);
-          else if (parts.length === 3){ parts[1] = guardCond(parts[1]); head = parts.join(";"); }
-          out += src.slice(i, k + 1) + head + ")"; i = close + 1; continue;
+          var parts = splitTop(head), forever = false;
+          if (w === "while"){ forever = constTrue(head); head = guardCond(head); }
+          else if (parts.length === 3){ forever = constTrue(parts[1]); parts[1] = guardCond(parts[1]); head = parts.join(";"); }
+          // un «;» es el final de un do-while (ya vigilado por el do) o un bucle vacío
+          out += src.slice(i, k + 1) + head + ")" + (forever && src[body] !== ";" ? PREFIX : ""); i = close + 1; continue;
         }
       }
       out += w; i += w.length;
@@ -197,17 +205,22 @@ var CR = (function(){
       out.textContent = "";
       var classpath = appPath("vendor/java/tools.jar") + ":" + appPath("vendor/java/ltiexam-runner.jar");
       var args = ["CodeRunner", classpath, "/files/cr" + Date.now() + "-" + n + "/", String(TIMEOUT_MS)].concat(files);
+      var timer;
       var run = cheerpjRunMain.apply(null, args).then(function(){ warm = true; return parse(out.textContent, tests, mainFile); });
+      // si termina tarde (una primera vez muy lenta), se puede volver a comprobar sin recargar
+      run.then(done, done);
+      function done(){ clearTimeout(timer); stuck = false; }
       // CheerpJ no puede interrumpir un bucle que nunca cede el control: si no vuelve, se da por colgado
       var hang = new Promise(function(resolve, reject){
-        setTimeout(function(){ stuck = true; reject(stuckError()); }, HANG_MS + TIMEOUT_MS * tests.length);
+        timer = setTimeout(function(){ stuck = true; reject(stuckError()); },
+          (warm ? HANG_MS : COLD_HANG_MS) + TIMEOUT_MS * tests.length);
       });
       return Promise.race([run, hang]);
     });
   }
 
   function stuckError(){
-    var e = new Error("Tu código no terminó (¿un bucle infinito?). Recargá la página para volver a comprobar.");
+    var e = new Error("La comprobación está tardando más de lo normal. Esperá unos segundos y volvé a comprobar.");
     e.stuck = true;
     return e;
   }
