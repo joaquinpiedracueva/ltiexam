@@ -164,7 +164,7 @@ function renderSetup(msg){
 
   app.innerHTML =
     '<section class="setup">' +
-      '<div class="setup-intro">' +
+      '<div class="page-head">' +
         "<h1>¿Qué querés practicar?</h1>" +
         "<p>Elegí el semestre y la materia. Las preguntas se sortean en cada intento.</p>" +
       "</div>" +
@@ -846,18 +846,21 @@ function answerHtml(q){
 // examen empezado y sin terminar
 function inAttempt(){ return !bar.hidden && !S.finished; }
 
-// el logo vuelve al selector sin recargar (conserva semestre y materia)
+// el logo vuelve al selector de Práctica sin recargar (conserva semestre y materia), también
+// desde las otras pestañas
 document.querySelector(".brand").onclick = function(e){
   e.preventDefault();
   if (inAttempt() && !confirm("¿Salir del examen? Se pierde el progreso de este intento.")) return;
   S.order = []; S.answered = false;
   renderSetup();
+  showTab("practica"); // js/tabs.js
 };
 
 /* ----------------------------- teclado ------------------------------- */
 // Enter / espacio pasan a la siguiente pregunta una vez respondida
 document.addEventListener("keydown", function(e){
   if (e.metaKey || e.ctrlKey || e.altKey) return;
+  if (document.getElementById("panePractica").hidden) return; // en la pestaña Carrera
   if (e.target.closest && e.target.closest("textarea, input, .ace_editor")) return; // escribiendo código
   if (S.answered && (e.key === "Enter" || e.key === " ")){
     var nb = document.getElementById("next");

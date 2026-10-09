@@ -2,25 +2,30 @@
 
 Práctica de exámenes de la Licenciatura en Tecnologías de la Información (UTEC). Es un sitio estático, sin build ni dependencias, publicado en GitHub Pages: <https://joaquinpiedracueva.github.io/ltiexam/>.
 
-Cada materia es un banco de preguntas en Markdown. La página lo descarga, sortea las preguntas, mezcla las alternativas y corrige en el navegador. Las preguntas CodeRunner compilan y ejecutan Java en el navegador con CheerpJ.
+Tiene tres pestañas: **Práctica** (los exámenes), **Carrera** (el avance en el plan de estudios y las previas de cada materia) y **Links** (enlaces de la facultad). Cada materia es un banco de preguntas en Markdown. La página lo descarga, sortea las preguntas, mezcla las alternativas y corrige en el navegador. Las preguntas CodeRunner compilan y ejecutan Java en el navegador con CheerpJ.
 
 ## Estructura
 
 ```
-index.html            página única: header, barra del examen, <main id="app">, pie
+index.html            página única: header con las pestañas, panel Práctica (barra, <main id="app">), panel Carrera, pie
 css/styles.css        todos los estilos; tema claro/oscuro con variables en :root
 js/parser.js          Markdown del banco → { title, questions[] }
 js/markdown.js        Markdown → HTML para enunciados y alternativas (esc, mdInline, mdBlock)
-js/catalog.js         lista de semestres y materias (MATERIAS)
+js/catalog.js         lista de semestres y materias con banco (MATERIAS)
+js/plan.js            plan de estudios completo con créditos y previas (PLAN), para la pestaña Carrera
+js/enlaces.js         enlaces de la pestaña Links, por grupo (ENLACES)
 js/coderunner.js      CR.check(code, tests): compila y prueba Java con CheerpJ
 js/app.js             estado (S), selector, examen, tiempo, navegación y resultados
+js/carrera.js         pestaña Carrera: estado de cada materia, previas, materias anotadas, guardado
+js/links.js           pestaña Links: los enlaces de enlaces.js
+js/tabs.js            cambio de pestaña (#practica / #carrera / #links); se carga al final
 bank/semestre-N/*.md  un banco por materia, en la carpeta de su semestre
 vendor/java/          tools.jar (javac), ltiexam-runner.jar y su fuente en runner/
 assets/               favicon y mosaicos del fondo
 tools/check-bank.js   revisa un banco (ver «Verificar un banco»)
 ```
 
-Los scripts se cargan en orden en `index.html` (`parser` → `markdown` → `catalog` → `coderunner` → `app`) y comparten el ámbito global: no hay módulos. El código y los comentarios están en español; se mantiene ES5 (`var`, `function`).
+Los scripts se cargan en orden en `index.html` (`parser` → `markdown` → `catalog` → `plan` → `coderunner` → `app` → `carrera` → `enlaces` → `links` → `tabs`) y comparten el ámbito global: no hay módulos. El código y los comentarios están en español; se mantiene ES5 (`var`, `function`).
 
 ## Correr en local
 
@@ -45,6 +50,16 @@ Las visitas se miden con Google Analytics (propiedad `G-V9MSQSSBXR`, en el `<hea
    ]
    ```
    Un semestre sin materias aparece en el selector, pero deshabilitado.
+
+## Pestaña Links
+
+Muestra los enlaces de `js/enlaces.js`: plataformas de la facultad y documentos de la carrera. Para sumar uno, se agrega `{ label, url, desc }` a la lista de su grupo (`pdf: true` le pone la marca PDF).
+
+## Pestaña Carrera
+
+Lista todas las materias de `js/plan.js` por semestre; cada una se marca como *Cursando*, *Examen* o *Aprobada*. Utec Innova y Optativa son cupos que se cumplen con materias a elección, a veces de 1 crédito (dos por cupo): en esos se anota cuáles se hicieron, con nombre y créditos, cada una *Cursando* o *Aprobada*, hasta llenar los créditos del cupo (si hay más, van en el cupo de otro semestre). Estos cupos no tienen examen ni botones propios: quedan aprobados cuando las aprobadas suman sus créditos y, si no llegan, como cursando (los créditos aprobados ya cuentan en el porcentaje).
+
+Se muestran las previas para cursar tal como las pide el plan 2024 ([Resolución 127/2024](https://utec.edu.uy/uploads/resolucion/2024_03_05_Resolucion127.pdf), «Régimen de previaturas»), sin calcular si se cumplen, debajo de cada materia. Inglés, Utec Innova, Vinculación y Optativa no llevan previas. Están en el campo `previas` de `js/plan.js`. El porcentaje es de créditos aprobados sobre el total (360). Cada cambio se guarda solo en `localStorage` (clave `carrera`, solo en ese navegador). Debajo de la barra de avance, el texto lleva los enlaces para descargar un backup (un `.json`) e importarlo, por si se pierden los datos del navegador o para pasar el progreso a otro dispositivo. Si cambia el plan, se edita `PLAN` (cada semestre suma 45 créditos).
 
 ## Formato del banco
 

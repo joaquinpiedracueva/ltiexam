@@ -56,59 +56,73 @@
         ></a>
         <div class="site-title">
           <b>ltiexam</b>
-          <span>Licenciatura en Tecnologías de la Información (UTEC)</span>
+          <span>Licenciatura en Tecnologías de la Información 2024 (UTEC)</span>
         </div>
+        <nav class="tabs" aria-label="Secciones">
+          <a href="#practica">Práctica</a>
+          <a href="#carrera">Carrera</a>
+          <a href="#links">Links</a>
+        </nav>
         <button class="theme-btn" id="themeBtn" type="button"></button>
       </header>
 
       <div class="content">
-        <header class="bar" id="bar" hidden>
-          <div class="bar-inner">
-            <div class="bar-top">
-              <div class="bar-title">
-                <b id="barTitle">Cuestionario</b>
-                <span class="eyebrow num" id="barPos"></span>
+        <!-- pestaña Práctica: selector y examen -->
+        <div class="pane" id="panePractica">
+          <header class="bar" id="bar" hidden>
+            <div class="bar-inner">
+              <div class="bar-top">
+                <div class="bar-title">
+                  <b id="barTitle">Cuestionario</b>
+                  <span class="eyebrow num" id="barPos"></span>
+                </div>
+                <div class="bar-stats">
+                  <span class="ok">Aciertos <b id="statOk">0</b></span>
+                  <span class="bad">Fallos <b id="statBad">0</b></span>
+                  <span>Precisión <b id="statPct">0%</b></span>
+                  <span class="timer" id="statTimeWrap" hidden
+                    >Tiempo <b id="statTime">0:00</b></span
+                  >
+                  <span class="verdict-chip chip-live" id="statChip"
+                    >Sin responder</span
+                  >
+                </div>
               </div>
-              <div class="bar-stats">
-                <span class="ok">Aciertos <b id="statOk">0</b></span>
-                <span class="bad">Fallos <b id="statBad">0</b></span>
-                <span>Precisión <b id="statPct">0%</b></span>
-                <span class="timer" id="statTimeWrap" hidden
-                  >Tiempo <b id="statTime">0:00</b></span
-                >
-                <span class="verdict-chip chip-live" id="statChip"
-                  >Sin responder</span
-                >
+              <div class="meter-wrap">
+                <div class="meter" id="meter">
+                  <i class="m-ok" id="mOk" style="width: 0%"></i>
+                  <i class="m-bad" id="mBad" style="width: 0%"></i>
+                </div>
+                <span class="pass-tick" aria-hidden="true"></span>
+                <div class="meter-legend">
+                  <span>0%</span>
+                  <span class="pass-label">60% aprobado</span>
+                  <span>100%</span>
+                </div>
               </div>
             </div>
-            <div class="meter-wrap">
-              <div class="meter" id="meter">
-                <i class="m-ok" id="mOk" style="width: 0%"></i>
-                <i class="m-bad" id="mBad" style="width: 0%"></i>
-              </div>
-              <span class="pass-tick" aria-hidden="true"></span>
-              <div class="meter-legend">
-                <span>0%</span>
-                <span class="pass-label">60% aprobado</span>
-                <span>100%</span>
-              </div>
-            </div>
-          </div>
-        </header>
+          </header>
 
-        <nav
-          class="qnav"
-          id="qnav"
-          aria-label="Navegación por el cuestionario"
-          hidden
-        >
-          <div class="qnav-grid" id="qnavGrid"></div>
-          <button class="btn btn-ghost" id="finishBtn" type="button">
-            Terminar
-          </button>
-        </nav>
+          <nav
+            class="qnav"
+            id="qnav"
+            aria-label="Navegación por el cuestionario"
+            hidden
+          >
+            <div class="qnav-grid" id="qnavGrid"></div>
+            <button class="btn btn-ghost" id="finishBtn" type="button">
+              Terminar
+            </button>
+          </nav>
 
-        <main id="app"></main>
+          <main id="app"></main>
+        </div>
+
+        <!-- pestaña Carrera: avance del plan de estudios (js/carrera.js) -->
+        <main id="paneCarrera" hidden></main>
+
+        <!-- pestaña Links: enlaces de la facultad (js/links.js, js/enlaces.js) -->
+        <main id="paneLinks" hidden></main>
       </div>
 
       <footer class="site-footer">
@@ -153,7 +167,12 @@
     <script src="js/parser.js"></script>
     <script src="js/markdown.js"></script>
     <script src="js/catalog.js"></script>
+    <script src="js/plan.js"></script>
     <script src="js/coderunner.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/carrera.js"></script>
+    <script src="js/enlaces.js"></script>
+    <script src="js/links.js"></script>
+    <script src="js/tabs.js"></script>
   </body>
 </html>

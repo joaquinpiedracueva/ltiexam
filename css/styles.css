@@ -8,6 +8,9 @@
   --accent:#00C7FF; --accent-ink:#04222e; --accent-soft:#cdeefa; --accent-text:#006a8e;
   --ok:#1c7a54; --ok-soft:#dcefe6; --ok-line:#8ccbb0;
   --bad:#b23a26; --bad-soft:#f7e1db; --bad-line:#e3a493;
+  /* amarillo de «Cursando» (Carrera); --warn-text es la variante legible como texto */
+  --warn:#e5b300; --warn-ink:#2b2200; --warn-text:#8a6a00; --warn-soft:#f7efcc; --warn-line:#dcc25a;
+  --prev:#6a3fb5; /* violeta del rótulo «Previas» (Carrera): distinto de los estados y los enlaces */
   --shadow:0 0 0 1px rgba(0,0,0,.02), 0 10px 40px -12px rgba(0,0,0,.25);
   --utec:#00C7FF;
   /* mosaico con el isotipo de UTEC */
@@ -26,6 +29,8 @@
     --accent:#00C7FF; --accent-ink:#04222e; --accent-soft:#0a2a36; --accent-text:#00C7FF;
     --ok:#5cc79c; --ok-soft:#16342a; --ok-line:#2f6d55;
     --bad:#ec8770; --bad-soft:#3a201a; --bad-line:#7d4032;
+    --warn:#e8c33a; --warn-ink:#2b2200; --warn-text:#e8c33a; --warn-soft:#352d10; --warn-line:#6e5c1c;
+    --prev:#b9a0f5;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -20px rgba(0,0,0,.9);
     --pattern:url("../assets/pattern-dark.svg");
   }
@@ -38,6 +43,8 @@
   --accent:#00C7FF; --accent-ink:#04222e; --accent-soft:#0a2a36; --accent-text:#00C7FF;
   --ok:#5cc79c; --ok-soft:#16342a; --ok-line:#2f6d55;
   --bad:#ec8770; --bad-soft:#3a201a; --bad-line:#7d4032;
+  --warn:#e8c33a; --warn-ink:#2b2200; --warn-text:#e8c33a; --warn-soft:#352d10; --warn-line:#6e5c1c;
+  --prev:#b9a0f5;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -20px rgba(0,0,0,.9);
   --pattern:url("../assets/pattern-dark.svg");
 }
@@ -59,12 +66,13 @@ body{
 .site-header, header.bar, .qnav, main, .site-footer{background:var(--surface); border:1px solid var(--border)}
 .site-header{border-top:none}
 .site-footer{border-bottom:none}
-.content{flex:1; display:flex; flex-direction:column; gap:5px}
+.content, .pane{flex:1; display:flex; flex-direction:column; gap:5px}
+.pane[hidden], main[hidden]{display:none}
 main{padding:2.25rem 2.5rem 3rem; flex:1}
 @media (max-width:560px){
   /* al estirar el scroll (rebote) se ve el lienzo: que sea del color del header/pie, no el mosaico */
   html{background:var(--surface)}
-  .page, .content{gap:4px}
+  .page, .content, .pane{gap:4px}
   .page{width:100%}
   .site-header, header.bar, .qnav, main, .site-footer{border-left:none; border-right:none}
   main{padding:1.5rem 1rem 2.25rem}
@@ -95,9 +103,27 @@ button{font:inherit; color:inherit; cursor:pointer}
 @media (hover:hover){ .theme-btn:hover{color:var(--text); background:var(--surface-2)} }
 .theme-btn svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 
+/* ---------- pestañas (en el encabezado, junto al botón del tema) ---------- */
+.tabs{display:flex; gap:1.1rem; flex:none; margin-right:1rem} /* aire antes del botón del tema */
+.tabs a{
+  padding:.35rem 0; border-bottom:2px solid transparent;
+  color:var(--text-dim); text-decoration:none; font-weight:500; font-size:14.5px;
+}
+@media (hover:hover){ .tabs a:hover{color:var(--text)} }
+.tabs a[aria-current="page"]{color:var(--text); border-bottom-color:var(--accent)}
+/* angosto: no entran el subtítulo y las pestañas en la misma fila */
+@media (max-width:640px){ .site-title span{display:none} }
+@media (max-width:560px){ .tabs{gap:.9rem; margin-right:.4rem} .tabs a{font-size:14px} }
+
 /* ---------- pie ---------- */
+/* siempre visible: pegado al borde inferior de la ventana */
 .site-footer{
+  position:sticky; bottom:0; z-index:10;
   padding:1.1rem 2.5rem 1.3rem; text-align:center; font-size:12.5px; color:var(--text-dim);
+}
+/* la separación de arriba tapa lo que pasa por detrás al hacer scroll */
+.site-footer::before{
+  content:""; position:absolute; left:-1px; right:-1px; bottom:100%; height:5px; background:var(--bg);
 }
 .site-footer{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem 1.75rem}
 .ft-item{
@@ -114,6 +140,7 @@ button{font:inherit; color:inherit; cursor:pointer}
   .site-title b{font-size:1.05rem}
   .site-title span{font-size:11.5px}
   .site-footer{padding:1rem}
+  .site-footer::before{height:4px; left:0; right:0}
 }
 
 /* ---------- barra superior ---------- */
@@ -156,18 +183,14 @@ header.bar{position:sticky; top:0; z-index:10}
 .chip-bad{color:var(--bad); background:var(--bad-soft); border-color:var(--bad-line)}
 .chip-live{color:var(--text-dim); background:var(--surface-2); border-color:var(--border)}
 
-/* ---------- inicio ---------- */
-/* el selector es toda la pantalla: centrado en el alto disponible */
-main:has(> .setup){display:flex; flex-direction:column; justify-content:center}
-.picker{
-  display:grid; grid-template-columns:1fr; gap:1.4rem;
-  width:100%; max-width:34rem; margin:0 auto; padding:2rem;
-  background:var(--surface-2); border:1px solid var(--border); /* caja en un gris distinto al contenido */
-}
-/* título y explicación arriba del selector */
-.setup-intro{width:100%; max-width:34rem; margin:0 auto 1.5rem; text-align:center}
-.setup-intro h1{font-family:var(--serif); font-weight:500; font-size:1.5rem; margin:0 0 .5rem}
-.setup-intro p{margin:0; color:var(--text-dim); font-size:14px; line-height:1.5}
+/* ---------- selector de Práctica ---------- */
+/* alineado arriba a la izquierda, como Carrera y Links; los campos en dos columnas */
+.picker{display:grid; grid-template-columns:1fr 1fr; gap:1.2rem 1rem}
+/* título y explicación arriba de cada pestaña (Práctica, Carrera, Links) */
+.page-head{margin:0 0 1.6rem}
+.page-head h1{font-family:var(--serif); font-weight:500; font-size:1.6rem; line-height:1.25; letter-spacing:-.01em; margin:0 0 .35rem}
+.page-head p{margin:0; color:var(--text-dim); font-size:14px; line-height:1.5}
+@media (max-width:560px){ .page-head h1{font-size:1.35rem} }
 .pk-field{display:flex; flex-direction:column; gap:.5rem; min-width:0}
 .picker .eyebrow{font-size:11.5px}
 .pk-label{display:flex; justify-content:space-between; align-items:baseline; gap:.5rem}
@@ -215,8 +238,11 @@ main:has(> .setup){display:flex; flex-direction:column; justify-content:center}
   position:absolute; right:.9rem; top:50%; transform:translateY(-50%); pointer-events:none;
   color:var(--text-faint); font-size:13px;
 }
-.picker .btn{height:3rem; padding:0 1.5rem; margin-top:.4rem; font-size:15px}
-.setup .err{text-align:center}
+.picker .btn{grid-column:1 / -1; justify-self:start; height:2.9rem; padding:0 2rem; margin-top:.2rem; font-size:15px}
+@media (max-width:560px){
+  .picker{grid-template-columns:1fr}
+  .picker .btn{justify-self:stretch}
+}
 .btn{
   border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
   padding:.6rem 1.15rem; font-weight:500; font-size:14.5px;
@@ -383,3 +409,95 @@ details.miss[open] > summary{border-bottom:1px solid var(--border)}
 .qn-sq.cur{outline:2px solid var(--accent); outline-offset:1px}
 .qnav .btn{flex:none; height:2rem; padding:0 1rem; font-size:13px}
 @media (max-width:560px){ .qnav{padding:.7rem 1rem} }
+
+/* ---------- carrera ---------- */
+.career-sub{color:var(--text-dim); font-size:13.5px}
+.career-meter{margin-top:1.3rem}
+.meter .m-warn{background:var(--warn)}
+
+.sem{margin-top:2.2rem}
+.sem-head{display:flex; align-items:baseline; gap:.3rem 1rem; flex-wrap:wrap; margin-bottom:.7rem}
+.sem-head h2{font-family:var(--serif); font-weight:500; font-size:1.15rem; margin:0}
+.sem-cr{color:var(--text-dim); font-size:13px}
+.subjs{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.4rem}
+.subj{
+  display:flex; align-items:center; flex-wrap:wrap; gap:.5rem 1rem;
+  padding:.55rem .6rem .55rem .85rem; border:1px solid var(--border); background:var(--surface);
+}
+.subj-name{flex:1; min-width:12rem; font-size:14.5px; font-weight:500; line-height:1.35}
+.subj-prev{display:block; margin-top:.2rem; font-size:12.5px; font-weight:400; color:var(--text-dim)}
+.subj-prev b{color:var(--prev); font-weight:600}
+.subj-name small{
+  display:block; margin-top:.15rem; font-size:11px; font-weight:400; letter-spacing:.05em;
+  text-transform:uppercase; color:var(--text-faint);
+}
+/* tres botones pegados: el que está marcado se pinta con el color de su estado */
+.seg{display:flex; flex:none}
+.seg button{
+  padding:.3rem .7rem; font-size:12.5px; color:var(--text-dim);
+  background:var(--surface-2); border:1px solid var(--border);
+}
+.seg button + button{margin-left:-1px}
+@media (hover:hover){ .seg button:hover{background:var(--surface-3); color:var(--text)} }
+.seg button[aria-pressed="true"]{font-weight:600; position:relative}
+.subj.is-aprobada{background:var(--ok-soft); border-color:var(--ok-line)}
+.subj.is-aprobada > .seg button[aria-pressed="true"]{background:var(--ok); border-color:var(--ok); color:var(--surface)}
+.subj.is-examen{background:var(--bad-soft); border-color:var(--bad-line)}
+.subj.is-examen > .seg button[aria-pressed="true"]{background:var(--bad); border-color:var(--bad); color:var(--surface)}
+.subj.is-cursando{background:var(--warn-soft); border-color:var(--warn-line)}
+.subj.is-cursando > .seg button[aria-pressed="true"]{background:var(--warn); border-color:var(--warn); color:var(--warn-ink)}
+
+/* Utec Innova y Optativa: materias anotadas en el cupo y formulario para agregar */
+.notes{flex-basis:100%; display:flex; flex-direction:column; align-items:flex-start; gap:.45rem}
+/* cada materia anotada: nombre, Cursando/Aprobada y quitar */
+.note-list{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:.35rem; width:100%}
+.note-list li{
+  display:flex; align-items:center; flex-wrap:wrap; gap:.4rem .75rem; padding:.3rem .3rem .3rem .7rem;
+  background:var(--surface); border:1px solid var(--border); font-size:13.5px;
+}
+.note-name{flex:1; min-width:10rem}
+.note-name small{margin-left:.5rem; font-size:11.5px; color:var(--text-faint)}
+.note-list .seg button{padding:.2rem .6rem; font-size:12px}
+.note-list li.is-cursando .seg button[aria-pressed="true"]{background:var(--warn); border-color:var(--warn); color:var(--warn-ink); font-weight:600}
+.note-list li.is-aprobada .seg button[aria-pressed="true"]{background:var(--ok); border-color:var(--ok); color:var(--surface); font-weight:600}
+.note-del{background:none; border:none; padding:.1rem .3rem; font-size:12px; line-height:1; color:var(--text-faint)}
+@media (hover:hover){ .note-del:hover{color:var(--bad)} }
+.note-full{margin:0; font-size:12.5px; color:var(--text-faint)}
+.note-form{display:flex; flex-wrap:wrap; gap:.4rem; width:100%}
+.note-form input{
+  flex:1 1 14rem; min-width:0; height:2.15rem; padding:0 .65rem;
+  border:1px solid var(--border); background:var(--surface); color:var(--text); font:inherit; font-size:14px;
+}
+.note-form .seg button[aria-pressed="true"]{background:var(--accent-soft); border-color:var(--accent); color:var(--text)}
+.note-form .btn{height:2.15rem; padding:0 .9rem; font-size:13.5px}
+/* guardado: un párrafo con los enlaces del backup, debajo de la barra de avance */
+.career-save{margin:1rem 0 0; font-size:13px; color:var(--text-faint)}
+.career-save .save-msg{color:var(--text); font-weight:500}
+.save-msg.err{color:var(--bad)}
+.career-save .btn-link{font-size:13px}
+@media (max-width:560px){
+  .subj-name{min-width:0; flex-basis:100%}
+  .seg{flex:1 1 100%}
+  .seg button{flex:1}
+  .note-name{flex-basis:100%}
+  .note-list .seg{flex:1 1 auto} /* que la ✕ quede al lado, no sola abajo */
+}
+
+/* ---------- links ---------- */
+.home-links + .home-links{margin-top:2.2rem}
+.home-links h2{font-family:var(--serif); font-weight:500; font-size:1.15rem; margin:0 0 .7rem}
+.link-list{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fit, minmax(17rem, 1fr)); gap:.4rem}
+.link-list a{
+  position:relative; display:flex; flex-direction:column; gap:.1rem; height:100%; padding:.6rem 2.2rem .65rem .85rem;
+  background:var(--surface); border:1px solid var(--border); color:var(--text); text-decoration:none;
+}
+@media (hover:hover){ .link-list a:hover{border-color:var(--accent); background:var(--surface-2)} }
+.link-label{font-weight:500; font-size:14.5px}
+.link-label small{
+  margin-left:.3rem; padding:0 .3rem; font-size:10px; font-weight:600; letter-spacing:.05em;
+  color:var(--text-faint); border:1px solid var(--border); vertical-align:2px;
+}
+.link-desc{font-size:12.5px; color:var(--text-faint)}
+.link-ext{position:absolute; right:.85rem; top:.6rem; color:var(--text-faint)}
+/* muy angosto: no entran «ltiexam» y las tres pestañas; queda el logo */
+@media (max-width:360px){ .site-title{display:none} .tabs{margin-left:auto} }
