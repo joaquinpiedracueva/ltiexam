@@ -179,3 +179,48 @@
 - ✅ b. La persona que reportó el incidente o alguien de su equipo debe verificar que esté resuelto y cerrarlo.
 - c. El tester debe crear un incidente diferente sin verificar la corrección.
 - d. El gerente debe asignarle automáticamente una nueva categoría.
+
+## Pregunta 21
+
+**Enunciado:** Una funcionalidad de pago depende de un servicio externo. El requerimiento solamente describe el flujo exitoso: "El usuario realiza el pago y el sistema confirma la compra." ¿Qué aspecto resulta especialmente relevante desde la perspectiva del Tester?
+
+- a. Verificar que el diseño visual del botón sea consistente con el resto de la aplicación.
+- ✅ b. Identificar qué ocurre si el servicio externo no responde, rechaza la operación o se interrumpe la comunicación.
+- c. Determinar únicamente si el botón de pago permite completar el flujo.
+- d. Asumir que el servicio externo gestionará todos los escenarios excepcionales.
+
+## Pregunta 22
+
+**Enunciado:** ¿Cuál de las siguientes secuencias representa mejor el enfoque planteado para pasar de los requerimientos al diseño de pruebas?
+
+- a. Requerimiento → ejecución exploratoria → identificación de errores → caso de prueba.
+- b. Requerimiento → caso de prueba → condición → ejecución → resultado.
+- ✅ c. Requerimiento → identificación de condiciones de prueba → diseño de casos de prueba → ejecución → resultados.
+- d. Requerimiento → diseño de casos de prueba → identificación de información faltante → ejecución.
+
+## Pregunta 23
+
+**Enunciado:** En una tabla de decisión existen tres condiciones binarias independientes. Si no se eliminan combinaciones por reglas de negocio, ¿cuántas combinaciones teóricas deben considerarse?
+
+- a. 9
+- ✅ b. 8
+- c. 12
+- d. 6
+
+## Pregunta 24
+
+**Enunciado:** ¿Cuál de las siguientes afirmaciones describe correctamente qué significa All Pairs?
+
+- ✅ a. Cada combinación posible de dos valores pertenecientes a diferentes parámetros debe aparecer al menos una vez en el conjunto seleccionado.
+- b. Se seleccionan pares de casos de prueba que representen los escenarios más frecuentes.
+- c. Cada caso de prueba debe contener exactamente dos parámetros.
+- d. Se prueban únicamente las combinaciones entre los dos parámetros que presentan mayor riesgo.
+
+## Pregunta 25
+
+**Enunciado:** Un Tester recibe el siguiente requerimiento: "Un usuario de entre 18 y 65 años puede solicitar un préstamo. Los clientes Premium obtienen una tasa preferencial. La solicitud puede ser aprobada o rechazada y atraviesa diferentes estados." ¿Cuál de las siguientes asociaciones es más correcta?
+
+- a. Edad → transición de estado; Premium → All Pairs; estados → tabla de decisión.
+- b. Edad → tabla de decisión; Premium → condiciones de borde; estados → All Pairs.
+- ✅ c. Edad → clases de equivalencia y condiciones de borde; Premium y otras reglas → tabla de decisión; estados → transición de estado.
+- d. Edad → All Pairs; Premium → clases de equivalencia; estados → condiciones de borde.
