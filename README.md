@@ -49,7 +49,7 @@ Las visitas se miden con Google Analytics (propiedad `G-V9MSQSSBXR`, en el `<hea
      ...
    ]
    ```
-   Un semestre sin materias aparece en el selector, pero deshabilitado.
+   Una materia sin `file` (todavía sin banco) aparece en el selector, pero deshabilitada. Un semestre sin materias aparece, pero deshabilitado.
 
 ## Pestaña Links
 
@@ -202,3 +202,9 @@ node tools/check-bank.js bank/semestre-2/AYPD.md
 ```
 
 Parsea el banco con `js/parser.js` y avisa de números repetidos, preguntas repetidas (mismo enunciado y mismas alternativas, sin importar orden, letras, mayúsculas, tildes ni puntuación; en las CodeRunner, mismo código base), opciones únicas sin ✅ y emparejamientos sin exactamente una ✅ por término. En las CodeRunner con `### Solución`, compila la solución con cada prueba en el JDK local y compara la salida con la esperada. El JDK local puede ser más nuevo que Java 8, así que no detecta sintaxis moderna. Hay que correrlo después de agregar o editar preguntas.
+
+## Licencia
+
+El código está bajo la [licencia MIT](LICENSE). La licencia no cubre las preguntas de los bancos (`bank/`): salen de evaluaciones y materiales de UTEC, se comparten solo para practicar y se quitan si la facultad o un docente lo pide. Para contribuir, ver [CONTRIBUTING.md](CONTRIBUTING.md), el [código de conducta](CODE_OF_CONDUCT.md) y cómo reportar problemas de seguridad en [SECURITY.md](SECURITY.md).
+
+Lo de terceros mantiene su licencia: `vendor/java/tools.jar` es del OpenJDK (GPL v2 con la excepción de `vendor/java/ASSEMBLY_EXCEPTION`, texto en `vendor/java/LICENSE`), y Ace y CheerpJ se cargan desde sus CDN con las suyas.

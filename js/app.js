@@ -160,7 +160,10 @@ function renderSetup(msg){
     var empty = !x.materias.length; // semestre todavía sin bancos
     return { label: x.label, disabled: empty };
   });
-  var matItems = hasSem ? CATALOG[S.sem].materias.map(function(m){ return { label: m.label }; }) : [];
+  // las materias sin banco se ven, pero no se pueden elegir
+  var matItems = hasSem ? CATALOG[S.sem].materias.map(function(m){
+    return { label: m.label, disabled: !m.file };
+  }) : [];
 
   app.innerHTML =
     '<section class="setup">' +
