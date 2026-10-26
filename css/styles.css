@@ -132,7 +132,6 @@ button{font:inherit; color:inherit; cursor:pointer}
 @media (hover:hover){ a.ft-item:hover{color:var(--text)} }
 .ft-item span{overflow-wrap:anywhere}
 .ft-item svg{width:17px; height:17px; flex:none; fill:currentColor}
-.ft-item svg.stroke{fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
 
 @media (max-width:560px){
   .site-header{padding:.9rem 1rem; gap:.9rem}
